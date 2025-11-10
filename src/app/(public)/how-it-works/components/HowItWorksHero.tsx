@@ -1,0 +1,17 @@
+'use client'
+import { fadeDownVariant } from '@/utils/animation.util'
+import { motion } from 'framer-motion'
+export function HowItWorksHero() {
+  return (
+    <motion.div variants={fadeDownVariant} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
+      <section className="pt-12 md:pt-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-5xl md:text-6xl font-black text-foreground mb-8">How Boardtide Works</h1>
+            <p className="text-2xl font-bold text-muted-foreground mb-16 max-w-3xl mx-auto leading-relaxed">Connect with global C-suite executives in three simple steps</p>
+          </div>
+        </div>
+      </section>
+    </motion.div>
+  )
+}
