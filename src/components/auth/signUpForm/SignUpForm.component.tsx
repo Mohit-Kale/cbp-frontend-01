@@ -17,7 +17,6 @@ import { useRegisterMutation } from '@/redux/services/auth.api'
 import { signUpSchema, type SignUpFormData } from './SignUpForm.schema'
 import { paths } from '@/navigate/paths'
 import TermsConditionsDialog from './TermsCondtionsDialog'
-import { useCreateStripeSessionMutation } from '@/redux/services/consultant.stripe.api'
 
 export default function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -27,7 +26,6 @@ export default function SignUpForm() {
   const [isTermsAccepted, setIsTermsAccepted] = useState(false)
 
   const [register] = useRegisterMutation()
-  const [createStripeSession] = useCreateStripeSessionMutation()
   const { closeAuthDialog, authRole } = useAuthDialog() // 👈 include authRole
   const router = useRouter()
 
@@ -63,10 +61,7 @@ export default function SignUpForm() {
         password: data.password,
         role: authRole,
       })
-      if (authRole === 'CONSULTANT') {
-        const stripeSessionResponse = await createStripeSession({ email: data.email })
-        if ('error' in stripeSessionResponse) throw new Error()
-      }
+
       if ('error' in response) throw new Error()
 
       router.push(paths.registrationSuccess(data.email))

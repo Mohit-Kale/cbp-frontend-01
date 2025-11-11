@@ -24,13 +24,14 @@ import { RenderField } from '@/components/renderComponent/RenderField'
 import { normalizeNullArrays } from '@/utils/normalizeData'
 import { normalizeData } from '@/utils/normalizeData'
 import { Currencies } from '@/dto/Currencies.dto'
+import { useOnBoardingMutation } from '@/redux/services/consultant.stripe.api'
 
 export default function ProfileForm() {
   const { data } = useProfileQuery()
   const dispatch = useReduxDispatch()
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
   const [uploadFile] = useUploadFileMutation()
-  const [activeTab, setActiveTab] = React.useState<'static' | 'dynamic'>('static')
+  const [activeTab, setActiveTab] = React.useState<'static' | 'dynamic' | 'payment'>('static')
 
   // Scroll to top when switching tabs
   React.useEffect(() => {
@@ -114,6 +115,25 @@ export default function ProfileForm() {
       hourlyRate: data?.profile?.hourlyRate?.toString() ?? '',
     },
   })
+  const [onBoarding] = useOnBoardingMutation()
+  const handleOnBoarding = async () => {
+    if (!data?.profile?.stripeAccountId) {
+      toast.error('Stripe account email not available.')
+      return
+    }
+
+    try {
+      const response = await onBoarding({ accountId: data.profile.stripeAccountId }).unwrap()
+      if (response?.url) {
+        window.location.href = response.url
+      } else {
+        toast.error('Failed to get onboarding URL. Please try again.')
+      }
+    } catch (error) {
+      console.error('Onboarding error:', error)
+      toast.error('Something went wrong while initiating payout setup.')
+    }
+  }
 
   React.useEffect(() => {
     if (existingResumeUrl && !form.getValues('resumeUrl')) {
@@ -193,6 +213,7 @@ export default function ProfileForm() {
       if (response) {
         dispatch(updateUser(response))
         // toast.success('Profile updated successfully!')
+        setActiveTab('payment')
       }
     } catch (err) {
       console.error('Update failed:', err)
@@ -420,6 +441,7 @@ export default function ProfileForm() {
 
                   {/* RESUME UPLOAD */}
                   <ResumeUploadSection form={form} fileInputKey={fileInputKey} uploadedFile={uploadedFile} isParsing={isParsing} handleFileChange={handleFileChange} resetDynamicState={resetDynamicState} />
+                  {/* PAYMENT */}
                 </ProfileTabs>
               </div>
 

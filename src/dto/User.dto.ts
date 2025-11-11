@@ -22,6 +22,8 @@ export type UserDTO = TApiBase & {
     references?: { name: string; designation: string }[]
     currency?: { id: number; name: string; symbol: string } | null
     hourlyRate?: string
+    stripeAccountId?: string
+    stripeAccountStatus?: string
   }
 
   // Documents as received

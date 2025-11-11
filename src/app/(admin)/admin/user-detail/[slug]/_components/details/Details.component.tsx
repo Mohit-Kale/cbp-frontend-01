@@ -25,6 +25,8 @@ export default function AdminUserDetails({ data }: Props) {
   const fields = [
     { label: 'Email', value: data?.email },
     { label: 'Phone', value: data?.phone },
+    { label: 'Stripe Account Status', value: data?.profile?.stripeAccountStatus === 'VERIFIED' ? 'Configured' : 'Not Configured' },
+
     { label: 'Street', value: data?.profile?.street },
     { label: 'City', value: data?.profile?.city },
     { label: 'State', value: data?.profile?.state },
