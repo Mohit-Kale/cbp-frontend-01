@@ -47,7 +47,7 @@ export default function AuthGuard({ children, pageType }: AuthGuardProps) {
           street: data.profile?.street,
           city: data.profile?.city,
           state: data.profile?.state,
-          references: data.profile?.references || [],
+          references: data.profile?.references?.map((ref) => ({ name: ref.name, title: ref.title, email: ref.email, phone: ref.phone })) || [],
           resumeUrl,
         }
 
@@ -83,7 +83,7 @@ export default function AuthGuard({ children, pageType }: AuthGuardProps) {
 
     fetchUser()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [pathname])
 
   // 🔁 Reactively handle inactive user or role-based redirection
   useEffect(() => {
@@ -110,10 +110,15 @@ export default function AuthGuard({ children, pageType }: AuthGuardProps) {
     }
 
     // Consultant-specific rule — must upload resume (recheck on route change)
-    if (user.role === 'consultant' && !user.resumeUrl) {
+    if (user.role === 'consultant' && !user.isVerified) {
       const isProfilePage = pathname.includes('/consultant/profile')
       if (!isProfilePage) {
-        toast.error('Please complete your profile before proceeding!')
+        if (user.resumeUrl) {
+          toast.error('Your Profile is under review.')
+        } else {
+          console.log(user.resumeUrl, '-----')
+          toast.error('Please complete your profile before proceeding!')
+        }
         router.replace(paths.consultantProfile())
         return
       }

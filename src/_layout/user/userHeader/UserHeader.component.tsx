@@ -54,7 +54,8 @@ const UserHeader = () => {
     { href: paths.userDashboard(), label: 'Dashboard', requiresAuth: true },
     { href: paths.userProfile(), label: 'Profile', requiresAuth: true },
     // { href: '#', label: 'My ', requiresAuth: true },
-    { href: paths.userConsultants(), label: 'Consultants', icon: <MapPin className="w-4 h-4" />, requiresAuth: true },
+    { href: paths.userConsultants(), label: 'Find Consultants', icon: <MapPin className="w-4 h-4" />, requiresAuth: true },
+    { href: paths.userMyBookings(), label: 'My Bookings', icon: <MapPin className="w-4 h-4" />, requiresAuth: true },
     // { href: paths.pricing(), label: 'Pricing', requiresAuth: false },
     // { href: paths.recruitment(), label: 'Recruitment', requiresAuth: false },
   ]

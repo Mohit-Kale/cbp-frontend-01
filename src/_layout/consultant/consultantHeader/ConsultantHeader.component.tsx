@@ -14,6 +14,8 @@ import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuL
 import Image from 'next/image'
 import { handleLogout } from '@/utils'
 import path from 'path'
+import { toast } from 'sonner'
+import { useProfileQuery } from '@/redux/services/auth.api'
 const boardtideLogo = '/assets/boardtide-logo.png'
 
 type NavLink = {
@@ -33,7 +35,7 @@ const CustomerHeader = () => {
   // Redux state
   const { isLoggedIn, userProfile } = useReduxSelector((state) => state.user)
   const userRole = userProfile.role
-
+  const { data: userData } = useProfileQuery()
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -51,6 +53,8 @@ const CustomerHeader = () => {
       ?.join('')
       ?.toUpperCase()
   }
+  const isConsultantUnverified = isLoggedIn && userRole === 'consultant' && !userData?.isVerified
+  console.log(userData?.isVerified)
   const navLinks: NavLink[] = [
     { href: paths.consultantDashboard(), label: 'Dashboard', requiresAuth: true },
     { href: paths.consultantProfile(), label: 'Profile', requiresAuth: true },
@@ -69,14 +73,22 @@ const CustomerHeader = () => {
       return true
     })
   }, [isLoggedIn, userRole])
-
+  console.log('fnjoignfon', isConsultantUnverified)
   const renderNavLinks = () => {
     return filteredLinks.map((link, index) => {
       const isActive = pathname.startsWith(link.href)
+      const isDisabled = isConsultantUnverified && link.href !== paths.consultantProfile()
+      const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (isDisabled) {
+          e.preventDefault()
+          toast.error('Your profile is under review.')
+        }
+      }
+
       return (
         <NavigationMenuItem key={index}>
           <NavigationMenuLink asChild>
-            <Link href={link.href} className={`transition-colors ${isActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}>
+            <Link href={isDisabled ? '#' : link.href} onClick={handleNavClick} className={`transition-colors ${isActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}>
               {link.label}
             </Link>
           </NavigationMenuLink>

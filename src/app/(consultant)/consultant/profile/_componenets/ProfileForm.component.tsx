@@ -106,8 +106,8 @@ export default function ProfileForm() {
       state: data?.profile?.state ?? '',
       zipcode: data?.profile?.zipcode ?? '',
       references: data?.profile?.references ?? [
-        { name: '', title: '', email: '', phone: '' },
-        { name: '', title: '', email: '', phone: '' },
+        { name: data?.profile?.references?.[0]?.name ?? '', title: data?.profile?.references?.[0]?.title ?? '', email: data?.profile?.references?.[0]?.email ?? '', phone: data?.profile?.references?.[0]?.phone ?? '' },
+        { name: data?.profile?.references?.[1]?.name ?? '', title: data?.profile?.references?.[1]?.title ?? '', email: data?.profile?.references?.[1]?.email ?? '', phone: data?.profile?.references?.[1]?.phone ?? '' },
       ],
       resumeUrl: existingResumeUrl ?? undefined,
       specialties: data?.consultantSpecialties?.map((s) => s.specialtyId) ?? [],
@@ -404,7 +404,7 @@ export default function ProfileForm() {
                         <div key={item.fieldId} className="space-y-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {(['name', 'title', 'email', 'phone'] as const).map((sub) => (
-                              <RenderField key={sub} control={form.control} name={`references.${index}.${sub}`} label={sub.charAt(0).toUpperCase() + sub.slice(1)} />
+                              <RenderField key={sub} control={form.control} name={`references.${index}.${sub}`} label={sub.charAt(0).toUpperCase() + sub.slice(1)} required />
                             ))}
                           </div>
 

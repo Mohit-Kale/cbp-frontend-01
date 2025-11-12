@@ -124,7 +124,13 @@ export interface MyBooking {
   scheduleDate: string
   createdAt: string
   updatedAt: string
-  customer: {
+  customer?: {
+    id: number
+    fullName: string
+    email: string
+    phone: string
+  }
+  consultant?: {
     id: number
     fullName: string
     email: string

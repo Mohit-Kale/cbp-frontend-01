@@ -9,7 +9,6 @@ import multiMonthPlugin from '@fullcalendar/multimonth'
 import '@/styles/fullcalendar.css'
 import moment from 'moment'
 import { CheckCircle2, XCircle } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 
 export type TOnBookPayload = { start: Date; end: Date; title?: string; viewType?: string }
 
@@ -38,10 +37,21 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
       }
     })
   }, [events])
+  const [userTimeZone, setUserTimeZone] = useState<string>('local')
 
+  // Detect browser timezone on mount
+  useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+      if (tz) setUserTimeZone(tz)
+    } catch (err) {
+      console.warn('Could not detect timezone, falling back to local', err)
+    }
+  }, [])
   return (
     <div className="bg-card  sm:p-6 rounded-lg">
       <FullCalendar
+        timeZone={userTimeZone} //browser se detect kl
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, multiMonthPlugin]}
         initialView="timeGridWeek"
@@ -72,8 +82,8 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
             </div>
           )
         }}
-        slotMinTime="06:00:00"
-        slotMaxTime="23:00:00"
+        // slotMinTime="06:00:00"
+        // slotMaxTime="23:00:00"
         allDaySlot={false}
         eventClick={(info) => {
           if (info.event.extendedProps.type === 'available' && onBook) {

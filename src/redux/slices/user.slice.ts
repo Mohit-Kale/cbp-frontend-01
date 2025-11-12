@@ -13,7 +13,11 @@ export const userSlice = createSlice({
   reducers: {
     updateUser: (state, action: PayloadAction<any>) => {
       state.id = action.payload.id
-      state.userProfile = action.payload
+      state.userProfile = {
+        ...state.userProfile,
+        ...action.payload,
+        isVerified: state.userProfile.isVerified,
+      }
       state.isLoggedIn = true
       state.role = action.payload.role as TRoles
     },

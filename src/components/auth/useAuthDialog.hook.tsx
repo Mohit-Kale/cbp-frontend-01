@@ -9,10 +9,13 @@ export function useAuthDialog() {
   const dispatch = useReduxDispatch()
   const router = useRouter()
   const pathname = usePathname()
-  const { authDialogOpen, authMode, authRole } = useReduxSelector((state: RootState) => state.auth.authDialog)
+  const { isLoggedIn } = useReduxSelector((state) => state?.auth)
+
+  const { authDialogOpen, authMode, authRole } = useReduxSelector((state: RootState) => state?.auth?.authDialog)
 
   // opens the auth dialog and sets mode + role
   const openAuthDialog = (mode: TAuthMode, role: TRoles = 'USER') => {
+    if (isLoggedIn) return
     dispatch(handleAuthDialog({ authDialogOpen: true, authMode: mode, authRole: role }))
   }
 

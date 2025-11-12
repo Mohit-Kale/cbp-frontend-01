@@ -47,4 +47,5 @@ export const paths = {
   userConsultants: () => `${paths.user}/consultants`,
   userConsultantsSlots: (id: number) => `/slots/${id}`,
   userViewProfile: (id: number) => `/view-profile/${id}`,
+  userMyBookings: () => `${paths.user}/my-bookings`,
 }

@@ -15,15 +15,7 @@ import { toast } from 'sonner'
 import { useCreateBookingMutation, BookingPayload } from '@/redux/services/consultant.api'
 import { BookingSchema } from './Booking.schema'
 
-export default function BookingDialog({
-  showBookingForm,
-  setShowBookingForm,
-  selectedSlot,
-  consultant,
-  events,
-  source = { fromCalendar: true },
-  onDateChange,
-}: {
+type BookingDialogProps = {
   showBookingForm: boolean
   setShowBookingForm: (val: boolean) => void
   selectedSlot: any
@@ -31,11 +23,15 @@ export default function BookingDialog({
   events: any[]
   source: { fromCalendar: boolean }
   onDateChange?: (date: string) => void
-}) {
-  const { userProfile } = useReduxSelector((state) => state.user)
+}
+
+export default function BookingDialog({ showBookingForm, setShowBookingForm, selectedSlot, consultant, events, source = { fromCalendar: true }, onDateChange }: BookingDialogProps) {
   const today = moment().format('YYYY-MM-DD')
 
-  const formatSlotLabel = (start: string, end: string) => `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`
+  const formatSlotLabel = (start: string, end: string) => {
+    console.log({ start, end })
+    return `${moment(start).utc().format('HH:mm')} - ${moment(end).utc().format('HH:mm')}`
+  }
 
   const [selectedDate, setSelectedDate] = useState(selectedSlot?.date || today)
 
@@ -89,12 +85,15 @@ export default function BookingDialog({
 
     return events
       .filter((e) => e.type === 'available' && moment(e.start).format('YYYY-MM-DD') === selectedDate)
-      .map((e) => ({
-        slotId: e.id,
-        label: formatSlotLabel(e.start, e.end),
-        start: e.start,
-        end: e.end,
-      }))
+      .map((e) => {
+        console.log(e)
+        return {
+          slotId: e.id,
+          label: formatSlotLabel(e.start, e.end),
+          start: e.start,
+          end: e.end,
+        }
+      })
   }, [events, selectedDate])
 
   const onSubmit = async (values: any) => {
@@ -108,11 +107,12 @@ export default function BookingDialog({
       consultantId: consultant.id,
       bookingDate: moment().format('YYYY-MM-DD'),
       scheduleDate: moment(selectedDate).format('YYYY-MM-DD'),
-      startTime: moment(chosenSlot.start).format('HH:mm'),
-      endTime: moment(chosenSlot.end).format('HH:mm'),
+      startTime: moment(chosenSlot.start).utc().format('HH:mm'),
+      endTime: moment(chosenSlot.end).utc().format('HH:mm'),
+
       notes: values.notes || '',
     }
-
+    console.log('payload', payload)
     try {
       const res = await createBooking(payload).unwrap()
       setShowBookingForm(false)
@@ -121,6 +121,7 @@ export default function BookingDialog({
       console.log('Booking failed', err)
     }
   }
+  console.log({ availableTimes: availableTimes })
 
   return (
     <Dialog

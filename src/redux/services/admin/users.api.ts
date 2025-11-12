@@ -11,6 +11,7 @@ export const extendedApi = api.injectEndpoints({
         headers: { hideSuccessToast: 'true' },
         params: { page, limit },
       }),
+      providesTags: [{ type: 'User', id: 'LIST' }],
     }),
 
     userDetail: builder.query<any, any>({
@@ -19,7 +20,10 @@ export const extendedApi = api.injectEndpoints({
         method: 'GET',
         headers: { hideSuccessToast: 'true' },
       }),
-      providesTags: (result, error, { id }) => [{ type: 'User', id }],
+      providesTags: (result, error, { id }) => [
+        { type: 'User', id },
+        { type: 'AdminUsers', id: 'LIST' },
+      ],
     }),
 
     updateUser: builder.mutation<any, { id: string; isVerified?: boolean; status?: 'ACTIVE' | 'INACTIVE' }>({
@@ -28,7 +32,10 @@ export const extendedApi = api.injectEndpoints({
         method: 'PATCH',
         body: { isVerified, status },
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'User', id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'User', id },
+        { type: 'AdminUsers', id: 'LIST' },
+      ],
     }),
   }),
 })

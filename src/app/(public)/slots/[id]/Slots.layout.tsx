@@ -43,7 +43,6 @@ export default function ConsultantSlotsLayout() {
         type: slot.type,
         raw: slot,
       }))
-      console.log('[ConsultantSlotsLayout] Loaded events:', mapped)
       setEvents(mapped)
     }
   }, [slotData])
@@ -52,7 +51,6 @@ export default function ConsultantSlotsLayout() {
   if (!consultant) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Consultant not found</div>
 
   const handleBookSlot = ({ start, end, viewType }: any) => {
-    // console.log('[ConsultantSlotsLayout] Booking clicked:', start, end, viewType)
     const slot = events.find((e) => moment(e.start).isSame(start) && moment(e.end).isSame(end))
     if (!slot || slot.type !== 'available') {
       console.log('[ConsultantSlotsLayout] Slot not available')

@@ -1,14 +1,9 @@
 import { z } from 'zod'
 
 export const ReferenceSchema = z.object({
-  name: z.string().optional(),
-  title: z.string().optional(),
-  email: z
-    .string()
-    .trim()
-    .transform((val) => (val === '' ? undefined : val))
-    .optional()
-    .or(z.literal('')),
+  name: z.string().min(1, 'Name is required'),
+  title: z.string().min(1, 'Title is required'),
+  email: z.string().trim().min(1, 'Email is required').email('Invalid email'),
   phone: z.string().trim().optional(),
 })
 
@@ -23,7 +18,7 @@ export const ProfileSchema = z.object({
   state: z.string().optional(),
   zipcode: z.string().optional(),
   // References
-  references: z.array(ReferenceSchema).optional(),
+  references: z.array(ReferenceSchema).min(1, 'Please add at least two reference'),
   specialties: z.array(z.number()).min(1, 'Please select at least one specialty'),
   currencyId: z.number({ invalid_type_error: 'Select a currency' }).refine((val) => val > 0, { message: 'Select a currency' }),
   hourlyRate: z

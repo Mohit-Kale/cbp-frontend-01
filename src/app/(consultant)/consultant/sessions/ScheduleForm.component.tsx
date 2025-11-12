@@ -102,25 +102,6 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
   const selectAllWeekdays = () => !isReadOnly && form.setValue('byWeekday', [...weekdays], { shouldValidate: true })
   const clearAllWeekdays = () => !isReadOnly && form.setValue('byWeekday', [], { shouldValidate: true })
 
-  /* ---------------- SUMMARY ---------------- */
-  const generateSummary = () => {
-    if (!startDateValue || !untilValue) return null
-    const startMoment = moment(startDateValue)
-    const endMoment = moment(untilValue)
-    if (!startMoment.isValid() || !endMoment.isValid()) return null
-
-    let summary = byWeekday.length > 0 ? `Runs on ${byWeekday.map((d) => weekdayLabels[d]).join(', ')}` : 'Runs daily'
-    if (byHour.length > 0) {
-      const sortedHours = [...byHour].sort((a, b) => a - b)
-      const hourStrings = sortedHours.map((h) => `${h.toString().padStart(2, '0')}:00`)
-      summary += sortedHours.length <= 3 ? ` at ${hourStrings.join(', ')}` : ` at ${sortedHours.length} selected hours (${hourStrings[0]} - ${hourStrings[sortedHours.length - 1]})`
-    }
-    summary += ` from ${startMoment.format('MMM D, YYYY')} to ${endMoment.format('MMM D, YYYY')}`
-    return summary
-  }
-
-  const summary = generateSummary()
-
   /* ---------------- SUBMIT ---------------- */
   const onSubmit = async (values: ScheduleFormValues) => {
     if (isReadOnly) return
@@ -160,6 +141,44 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
       })
     }
   }
+  const isDateRangeSelected = !!(startDateValue && untilValue)
+  const [allowedWeekdays, setAllowedWeekdays] = React.useState<Weekday[]>([])
+
+  useEffect(() => {
+    if (!startDateValue || !untilValue) {
+      setAllowedWeekdays([])
+      form.setValue('byWeekday', []) // reset if dates are missing
+      return
+    }
+
+    const start = moment(startDateValue)
+    const end = moment(untilValue)
+
+    if (!start.isValid() || !end.isValid() || end.isBefore(start, 'day')) {
+      setAllowedWeekdays([])
+      form.setValue('byWeekday', []) // reset if invalid range
+      return
+    }
+
+    const daysSet = new Set<Weekday>()
+    const cursor = start.clone()
+
+    while (cursor.isSameOrBefore(end, 'day')) {
+      const weekday = cursor.format('dd').toUpperCase() as Weekday // "MO", "TU", etc.
+      if (weekdays.includes(weekday)) daysSet.add(weekday)
+      cursor.add(1, 'day')
+    }
+
+    const newAllowed = [...daysSet]
+    setAllowedWeekdays(newAllowed)
+
+    // ✅ prune or reset previously selected days if they’re now invalid
+    const currentSelected = form.getValues('byWeekday') || []
+    const stillValid = currentSelected.filter((d) => newAllowed.includes(d))
+    if (stillValid.length !== currentSelected.length) {
+      form.setValue('byWeekday', stillValid, { shouldValidate: true })
+    }
+  }, [startDateValue, untilValue])
 
   /* ---------------- RENDER ---------------- */
   return (
@@ -180,10 +199,10 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
               </Label>
               {!isReadOnly && (
                 <div className="flex gap-2">
-                  <Button type="button" size="sm" variant="default" className="px-4 hover:bg-primary/80" onClick={selectAllWeekdays}>
+                  <Button type="button" size="sm" variant="default" className="px-4 hover:bg-primary/80" onClick={selectAllWeekdays} disabled={!isDateRangeSelected}>
                     All
                   </Button>
-                  <Button type="button" size="sm" variant="secondary" onClick={clearAllWeekdays}>
+                  <Button type="button" size="sm" variant="secondary" onClick={clearAllWeekdays} disabled={!isDateRangeSelected}>
                     Clear
                   </Button>
                 </div>
@@ -191,7 +210,7 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
             </div>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,1fr))] gap-2">
               {weekdays.map((d) => (
-                <Button key={d} type="button" variant={byWeekday.includes(d) ? 'default' : 'outline'} onClick={() => toggleWeekday(d)} disabled={isReadOnly}>
+                <Button key={d} type="button" variant={byWeekday.includes(d) ? 'default' : 'outline'} onClick={() => toggleWeekday(d)} disabled={isReadOnly || !isDateRangeSelected || !allowedWeekdays.includes(d)}>
                   {weekdayLabels[d].slice(0, 3)}
                 </Button>
               ))}

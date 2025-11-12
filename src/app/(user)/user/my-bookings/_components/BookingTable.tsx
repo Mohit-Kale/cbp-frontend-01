@@ -55,14 +55,14 @@ export default function MyBookingsTable() {
           {viewingBooking && (
             <div className="flex flex-col gap-2 mt-2">
               <div>
-                <span className="font-medium">Username:</span> {viewingBooking.customer?.fullName}
+                <span className="font-medium">Consultant Name:</span> {viewingBooking.consultant?.fullName}
               </div>
               <div>
-                <span className="font-medium">Email:</span> {viewingBooking.customer?.email}
+                <span className="font-medium">Consultant Email:</span> {viewingBooking.consultant?.email}
               </div>
-              {viewingBooking.customer?.phone && (
+              {viewingBooking.consultant?.phone && (
                 <div>
-                  <span className="font-medium">Phone:</span> {viewingBooking.customer.phone}
+                  <span className="font-medium">Consultant Phone:</span> {viewingBooking.consultant.phone}
                 </div>
               )}
               <div>
@@ -74,11 +74,6 @@ export default function MyBookingsTable() {
               <div>
                 <span className="font-medium">Status:</span> {viewingBooking.status}
               </div>
-              {viewingBooking.notes && (
-                <div>
-                  <span className="font-medium">Notes:</span> {viewingBooking.notes}
-                </div>
-              )}
               <div className="mt-4 flex justify-end">
                 <Button variant="default" onClick={() => setIsViewDialogOpen(false)}>
                   Close

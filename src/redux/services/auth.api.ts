@@ -24,7 +24,7 @@ export const extendedApi = api.injectEndpoints({
         method: 'GET',
         headers: { hideSuccessToast: 'true' },
       }),
-      providesTags: ['profile'],
+      providesTags: [{ type: 'profile', id: 'CURRENT' }],
     }),
 
     updateProfile: builder.mutation<UserDTO, any>({
@@ -33,7 +33,7 @@ export const extendedApi = api.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'profile', id }],
+      invalidatesTags: [{ type: 'profile', id: 'CURRENT' }],
     }),
 
     // resetPassword: builder.mutation<void, { token: string; newPassword: string }>({

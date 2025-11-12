@@ -2,6 +2,7 @@ import React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import moment from 'moment'
 import { MyBooking } from '@/redux/services/consultant.api'
+import { Eye } from 'lucide-react'
 
 interface UseBookingColumnsProps {
   onView: (row: MyBooking) => void
@@ -11,18 +12,19 @@ export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
   const columns: ColumnDef<MyBooking>[] = React.useMemo(
     () => [
       {
-        accessorFn: (row) => row.customer?.fullName,
+        accessorFn: (row) => row.consultant?.fullName,
         id: 'username',
-        header: 'Username',
+        header: 'Consultant Name',
       },
       {
-        accessorFn: (row) => row.customer?.email,
+        accessorFn: (row) => row.consultant?.email,
         id: 'email',
-        header: 'Email',
+        header: 'Consultant Email',
       },
       {
-        accessorKey: 'customer.phone', // optional: if phone exists on customer
-        header: 'Phone',
+        accessorFn: (row) => row.consultant?.phone,
+        id: 'phone',
+        header: 'Consultant Phone',
         cell: ({ getValue }) => getValue() || '-', // fallback if undefined
       },
       {
@@ -35,6 +37,7 @@ export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
         id: 'slot',
         header: 'Slot',
       },
+
       {
         id: 'status',
         accessorKey: 'status',

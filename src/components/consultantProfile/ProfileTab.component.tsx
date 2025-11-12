@@ -29,7 +29,7 @@ export function ProfileTabs<T extends z.ZodTypeAny>({ activeTab, setActiveTab, c
       toast.error('Stripe account email not available.')
       return
     }
-
+    console.log(data.consultantDocuments)
     try {
       const response = await onBoarding({ accountId: data.profile.stripeAccountId }).unwrap()
       if (response?.url) {

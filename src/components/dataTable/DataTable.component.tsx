@@ -30,13 +30,13 @@ export function DataTable<TData, TValue>({ columns, data, page, setPage, totalPa
   return (
     <>
       <div className="rounded-lg overflow-x-auto">
-        <Table className="border-separate border-spacing-0 [&_tr]:border-b [&_tr]:border-primary/10 [&_th]:border-b [&_th]:border-primary/10 [&_td]:border-b [&_td]:border-primary/10">
+        <Table className="border-separate  border-spacing-0 [&_tr]:border-b [&_tr]:border-primary/10 [&_th]:border-b [&_th]:border-primary/10 [&_td]:border-b [&_td]:border-primary/10">
           <TableHeader className="sticky top-0 z-10 bg-primary/10">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="p-4">
+                    <TableHead key={header.id} className="p-3">
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   )
@@ -49,7 +49,7 @@ export function DataTable<TData, TValue>({ columns, data, page, setPage, totalPa
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className="hover:bg-primary/5">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="p-4">
+                    <TableCell key={cell.id} className="p-3">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -67,11 +67,11 @@ export function DataTable<TData, TValue>({ columns, data, page, setPage, totalPa
       </div>
 
       {isPaginationEnabled && totalPages && totalPages > 1 && (
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between py-4 text-sm">
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-between py-4 text-sm">
           <div className="text-gray-600 flex items-center gap-1">
             {page}-{data.length} of {totalPages}
           </div>
-          <div className="flex items-center gap-1 md:gap-4">
+          <div className="flex items-center gap-1 md:gap-3">
             <button className="cursor-pointer p-1 rounded bg-primary/10 text-primary hover:bg-primary/20" onClick={() => setPage && setPage(page! - 1)} disabled={page === 1}>
               <ChevronLeft />
             </button>

@@ -29,16 +29,18 @@ function UsersTable() {
       }) || []
     )
   }, [data])
+  const effectiveTotalPages = Math.ceil(filteredList.length / pageSize) || 1
+
   console.log(filteredList)
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <Users className="w-6 h-6 text-gray-700" />
-        <h2 className="text-xl font-medium text-gray-700">All Consultants</h2>
+        <h2 className="text-xl font-medium text-gray-700">All Users</h2>
       </div>
 
       <RenderComponent isLoading={isFetching} isError={isError} loader={<TableSkeleton />}>
-        <DataTable columns={columns} data={filteredList} page={data?.currentPage || page} setPage={setPage} totalPages={data?.totalPages || 1} isPaginationEnabled />
+        <DataTable columns={columns} data={filteredList} page={data?.currentPage || page} setPage={setPage} totalPages={effectiveTotalPages} isPaginationEnabled />
       </RenderComponent>
     </div>
   )

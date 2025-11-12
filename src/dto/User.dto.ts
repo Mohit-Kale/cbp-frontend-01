@@ -19,7 +19,7 @@ export type UserDTO = TApiBase & {
     zipcode?: string | null
     qualification?: string | null
     expertise?: string | null
-    references?: { name: string; designation: string }[]
+    references?: { name: string; title: string; email: string; phone: string }[]
     currency?: { id: number; name: string; symbol: string } | null
     hourlyRate?: string
     stripeAccountId?: string
@@ -41,5 +41,5 @@ export type UserDTO = TApiBase & {
   city?: string
   state?: string
   resumeUrl?: string
-  references?: { name: string; designation: string }[]
+  references?: { name: string; title: string; email: string; phone: string }[]
 }
