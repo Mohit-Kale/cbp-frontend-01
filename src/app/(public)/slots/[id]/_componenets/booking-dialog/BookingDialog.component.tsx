@@ -95,8 +95,8 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
       consultantId: consultant.id,
       bookingDate: moment().format('YYYY-MM-DD'),
       scheduleDate: moment(chosenSlot.start).format('YYYY-MM-DD'),
-      startTime: moment(chosenSlot.start).format('HH:mm'),
-      endTime: moment(chosenSlot.end).format('HH:mm'),
+      startTime: moment(chosenSlot.start).utc().format('HH:mm'),
+      endTime: moment(chosenSlot.end).utc().format('HH:mm'),
       notes: values.notes || '',
     }
 
