@@ -254,7 +254,7 @@ export default function ProfileForm() {
       /* ---------------------------------------------------
        1) BUILD REFERENCE FIELD ORDER (ACCURATE)
        --------------------------------------------------- */
-      let referenceFieldOrder: string[] = []
+      const referenceFieldOrder: string[] = []
 
       if (errors.references && typeof errors.references === 'object') {
         const referenceIndexes = Object.keys(errors.references) // usually ['0','1']
