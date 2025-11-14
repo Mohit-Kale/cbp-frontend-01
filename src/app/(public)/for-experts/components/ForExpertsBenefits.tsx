@@ -25,11 +25,17 @@ export function ForExpertsBenefits() {
   return (
     <section className="py-20">
       <div className="container mx-auto px-4 text-center">
-        <motion.h2 className="text-3xl font-bold text-foreground mb-4" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <motion.h2 className="text-3xl md:text-4xl font-black text-foreground mb-1" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           Why Join Boardtide?
         </motion.h2>
 
-        <motion.p className="text-muted-foreground max-w-2xl mx-auto mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
+        <motion.p
+          className="text-xl font-semibold text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+        >
           Leverage your executive experience while maintaining full control over your time and rates
         </motion.p>
 
@@ -41,12 +47,12 @@ export function ForExpertsBenefits() {
                   <span className="text-2xl">{b.icon}</span>
                 </div>
 
-                <div className="p-0 mb-3">
-                  <h3 className="text-xl font-semibold">{b.title}</h3>
+                <div className="p-0 ">
+                  <h3 className="text-2xl font-bold mb-1">{b.title}</h3>
                 </div>
 
                 <div className="flex-1 p-0">
-                  <p className="text-muted-foreground text-sm leading-relaxed">{b.text}</p>
+                  <p className="text-md font-semibold text-muted-foreground leading-relaxed">{b.text}</p>
                 </div>
               </div>
             </motion.div>

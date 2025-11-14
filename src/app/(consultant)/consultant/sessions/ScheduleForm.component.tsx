@@ -8,7 +8,7 @@ import { RRule } from 'rrule'
 import DatePickerInput from '@/components/dateInputPicker/DateInputPicker.component'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Form, FormMessage } from '@/components/ui/form'
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { useToast } from '@/components/ui/use-toast'
 import moment from 'moment'
 import { useSaveScheduleMutation, ConsultantSchedule } from '@/redux/services/consultant.api'
@@ -18,8 +18,8 @@ const scheduleSchema = z
   .object({
     startDate: z.string().min(1, 'Start date is required'),
     until: z.string().min(1, 'End date is required'),
-    byHour: z.array(z.number()).optional(),
-    byWeekday: z.array(z.enum(['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'])).optional(),
+    byHour: z.array(z.number()).min(1, 'At least one hour is required'),
+    byWeekday: z.array(z.enum(['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'])).min(1, 'At least one weekday is required'),
   })
   .refine(
     (data) => {
@@ -35,14 +35,27 @@ type ScheduleFormValues = z.infer<typeof scheduleSchema>
 
 const hours = Array.from({ length: 24 }, (_, i) => i)
 const weekdays = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
-const weekdayLabels = { MO: 'Monday', TU: 'Tuesday', WE: 'Wednesday', TH: 'Thursday', FR: 'Friday', SA: 'Saturday', SU: 'Sunday' }
+const weekdayLabels = {
+  MO: 'Monday',
+  TU: 'Tuesday',
+  WE: 'Wednesday',
+  TH: 'Thursday',
+  FR: 'Friday',
+  SA: 'Saturday',
+  SU: 'Sunday',
+}
 type Weekday = (typeof weekdays)[number]
 
 interface ScheduleFormProps {
   id?: number
-  defaultValues?: Partial<ConsultantSchedule> & { startDate?: string; until?: string; byHour?: number[]; byWeekday?: Weekday[] }
+  defaultValues?: Partial<ConsultantSchedule> & {
+    startDate?: string
+    until?: string
+    byHour?: number[]
+    byWeekday?: Weekday[]
+  }
   onSaved?: () => void
-  isReadOnly?: boolean // ✅ new prop
+  isReadOnly?: boolean
 }
 
 export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = false }: ScheduleFormProps) {
@@ -69,7 +82,6 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
     },
   })
 
-  console.log('iufbnvi', defaultValues)
   const byHour = form.watch('byHour') ?? []
   const byWeekday = form.watch('byWeekday') ?? []
   const startDateValue = form.watch('startDate')
@@ -86,28 +98,22 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
   }, [startDateValue])
 
   /* ---------------- TOGGLE LOGIC ---------------- */
-  const toggleHour = (h: number) => !isReadOnly && form.setValue(byHour.includes(h) ? 'byHour' : 'byHour', byHour.includes(h) ? byHour.filter((x) => x !== h) : [...byHour, h], { shouldValidate: true })
+  const toggleHour = (h: number) => !isReadOnly && form.setValue('byHour', byHour.includes(h) ? byHour.filter((x) => x !== h) : [...byHour, h], { shouldValidate: true })
 
   const toggleWeekday = (d: Weekday) => !isReadOnly && form.setValue('byWeekday', byWeekday.includes(d) ? byWeekday.filter((x) => x !== d) : [...byWeekday, d], { shouldValidate: true })
 
-  const selectBusinessHours = () =>
-    !isReadOnly &&
-    form.setValue(
-      'byHour',
-      hours.filter((h) => h >= 9 && h <= 17),
-      { shouldValidate: true },
-    )
-  const selectAllHours = () => !isReadOnly && form.setValue('byHour', hours, { shouldValidate: true })
-  const clearAllHours = () => !isReadOnly && form.setValue('byHour', [], { shouldValidate: true })
   const selectAllWeekdays = () => !isReadOnly && form.setValue('byWeekday', [...weekdays], { shouldValidate: true })
   const clearAllWeekdays = () => !isReadOnly && form.setValue('byWeekday', [], { shouldValidate: true })
+
+  const selectAllHours = () => !isReadOnly && form.setValue('byHour', hours, { shouldValidate: true })
+  const clearAllHours = () => !isReadOnly && form.setValue('byHour', [], { shouldValidate: true })
 
   /* ---------------- SUBMIT ---------------- */
   const onSubmit = async (values: ScheduleFormValues) => {
     if (isReadOnly) return
     try {
       let dtstart = moment(values.startDate).startOf('day').toDate()
-      if (values.byHour && values.byHour.length > 0) {
+      if (values.byHour?.length > 0) {
         dtstart = moment(values.startDate)
           .hour(Math.min(...values.byHour))
           .minute(0)
@@ -115,16 +121,20 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
           .toDate()
       }
 
-      const ruleConfig: any = { freq: RRule.DAILY, dtstart, until: moment(values.until).endOf('day').toDate() }
-      if (values.byHour && values.byHour.length > 0) ruleConfig.byhour = values.byHour
-      if (values.byWeekday && values.byWeekday.length > 0) ruleConfig.byweekday = values.byWeekday.map((d) => RRule[d])
+      const ruleConfig: any = {
+        freq: RRule.DAILY,
+        dtstart,
+        until: moment(values.until).endOf('day').toDate(),
+      }
+      if (values.byHour?.length > 0) ruleConfig.byhour = values.byHour
+      if (values.byWeekday?.length > 0) ruleConfig.byweekday = values.byWeekday.map((d) => RRule[d])
 
       const rule = new RRule(ruleConfig)
-
       const payload = id ? { id, rrule: rule.toString() } : { rrule: rule.toString() }
-      await saveSchedule(payload).unwrap()
 
+      await saveSchedule(payload).unwrap()
       toast({ title: 'Success', description: 'Schedule saved successfully' })
+
       form.reset({
         startDate: defaultValues?.startDate || '',
         until: defaultValues?.endDate || defaultValues?.until || '',
@@ -141,22 +151,22 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
       })
     }
   }
+
   const isDateRangeSelected = !!(startDateValue && untilValue)
   const [allowedWeekdays, setAllowedWeekdays] = React.useState<Weekday[]>([])
 
   useEffect(() => {
     if (!startDateValue || !untilValue) {
       setAllowedWeekdays([])
-      form.setValue('byWeekday', []) // reset if dates are missing
+      form.setValue('byWeekday', [])
       return
     }
 
     const start = moment(startDateValue)
     const end = moment(untilValue)
-
     if (!start.isValid() || !end.isValid() || end.isBefore(start, 'day')) {
       setAllowedWeekdays([])
-      form.setValue('byWeekday', []) // reset if invalid range
+      form.setValue('byWeekday', [])
       return
     }
 
@@ -164,7 +174,7 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
     const cursor = start.clone()
 
     while (cursor.isSameOrBefore(end, 'day')) {
-      const weekday = cursor.format('dd').toUpperCase() as Weekday // "MO", "TU", etc.
+      const weekday = cursor.format('dd').toUpperCase() as Weekday
       if (weekdays.includes(weekday)) daysSet.add(weekday)
       cursor.add(1, 'day')
     }
@@ -172,7 +182,6 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
     const newAllowed = [...daysSet]
     setAllowedWeekdays(newAllowed)
 
-    // ✅ prune or reset previously selected days if they’re now invalid
     const currentSelected = form.getValues('byWeekday') || []
     const stillValid = currentSelected.filter((d) => newAllowed.includes(d))
     if (stillValid.length !== currentSelected.length) {
@@ -192,58 +201,76 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
           </div>
 
           {/* Weekdays */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <Label>
-                {isReadOnly ? 'Selected Days' : 'Select Days'} <span className="text-red-500">*</span>
-              </Label>
-              {!isReadOnly && (
-                <div className="flex gap-2">
-                  <Button type="button" size="sm" variant="default" className="px-4 hover:bg-primary/80" onClick={selectAllWeekdays} disabled={!isDateRangeSelected}>
-                    All
-                  </Button>
-                  <Button type="button" size="sm" variant="secondary" onClick={clearAllWeekdays} disabled={!isDateRangeSelected}>
-                    Clear
-                  </Button>
+          <FormField
+            control={form.control}
+            name="byWeekday"
+            render={({ field }) => (
+              <FormItem>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>
+                      {isReadOnly ? 'Selected Days' : 'Select Days'} <span className="text-red-500">*</span>
+                    </Label>
+                    {!isReadOnly && (
+                      <div className="flex gap-2">
+                        <Button type="button" size="sm" variant="default" onClick={selectAllWeekdays} disabled={!isDateRangeSelected}>
+                          All
+                        </Button>
+                        <Button type="button" size="sm" variant="secondary" onClick={clearAllWeekdays} disabled={!isDateRangeSelected}>
+                          Clear
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,1fr))] gap-2">
+                    {weekdays.map((d) => (
+                      <Button key={d} type="button" variant={field.value?.includes(d) ? 'default' : 'outline'} onClick={() => toggleWeekday(d)} disabled={isReadOnly || !isDateRangeSelected || !allowedWeekdays.includes(d)}>
+                        {weekdayLabels[d].slice(0, 3)}
+                      </Button>
+                    ))}
+                  </div>
+                  <FormMessage />
                 </div>
-              )}
-            </div>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,1fr))] gap-2">
-              {weekdays.map((d) => (
-                <Button key={d} type="button" variant={byWeekday.includes(d) ? 'default' : 'outline'} onClick={() => toggleWeekday(d)} disabled={isReadOnly || !isDateRangeSelected || !allowedWeekdays.includes(d)}>
-                  {weekdayLabels[d].slice(0, 3)}
-                </Button>
-              ))}
-            </div>
-            <FormMessage>{form.formState.errors.byWeekday?.message}</FormMessage>
-          </div>
+              </FormItem>
+            )}
+          />
 
           {/* Hours */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <Label>
-                {isReadOnly ? 'Selected Hours' : 'Select Hours'} <span className="text-red-500">*</span>
-              </Label>
-              {!isReadOnly && (
-                <div className="flex gap-2">
-                  <Button type="button" size="sm" variant="default" className="px-4 hover:bg-primary/80" onClick={selectAllHours}>
-                    All
-                  </Button>
-                  <Button type="button" size="sm" variant="secondary" onClick={clearAllHours}>
-                    Clear
-                  </Button>
+          <FormField
+            control={form.control}
+            name="byHour"
+            render={({ field }) => (
+              <FormItem>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>
+                      {isReadOnly ? 'Selected Hours' : 'Select Hours'} <span className="text-red-500">*</span>
+                    </Label>
+                    {!isReadOnly && (
+                      <div className="flex gap-2">
+                        <Button type="button" size="sm" variant="default" onClick={selectAllHours}>
+                          All
+                        </Button>
+                        <Button type="button" size="sm" variant="secondary" onClick={clearAllHours}>
+                          Clear
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,1fr))] gap-2">
+                    {hours.map((h) => (
+                      <Button key={h} type="button" variant={field.value?.includes(h) ? 'default' : 'outline'} className="text-xs sm:text-sm" onClick={() => toggleHour(h)} disabled={isReadOnly}>
+                        {h.toString().padStart(2, '0')}:00
+                      </Button>
+                    ))}
+                  </div>
+                  <FormMessage />
                 </div>
-              )}
-            </div>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,1fr))] gap-2">
-              {hours.map((h) => (
-                <Button key={h} type="button" variant={byHour.includes(h) ? 'default' : 'outline'} className="text-xs sm:text-sm" onClick={() => toggleHour(h)} disabled={isReadOnly}>
-                  {h.toString().padStart(2, '0')}:00
-                </Button>
-              ))}
-            </div>
-            <FormMessage>{form.formState.errors.byHour?.message}</FormMessage>
-          </div>
+              </FormItem>
+            )}
+          />
 
           {/* Actions */}
           {!isReadOnly && (

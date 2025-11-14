@@ -30,11 +30,17 @@ export function ExpertRequirements() {
   return (
     <section className="py-20 bg-muted/50">
       <div className="container mx-auto px-4 max-w-4xl">
-        <div className="text-center mb-16">
-          <motion.h2 className="text-3xl font-bold text-foreground mb-4" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <div className="text-center mb-12">
+          <motion.h2 className="text-3xl md:text-4xl font-black text-foreground mb-1s" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             Expert Requirements
           </motion.h2>
-          <motion.p className="text-muted-foreground" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
+          <motion.p
+            className="text-xl font-semibold text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
             We maintain high standards to ensure our clients receive exceptional guidance
           </motion.p>
         </div>

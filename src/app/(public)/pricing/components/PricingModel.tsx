@@ -26,7 +26,7 @@ export function PricingModel() {
     <section className="pt-16">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
-          <motion.h2 className="mb-8 text-3xl font-bold text-foreground" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <motion.h2 className="text-3xl md:text-4xl font-black text-foreground mb-12" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             How Boardtide Pricing Works
           </motion.h2>
 

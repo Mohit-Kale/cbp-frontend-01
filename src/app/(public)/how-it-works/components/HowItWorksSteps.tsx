@@ -47,9 +47,9 @@ export function HowItWorksSteps() {
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4">
                   <span className="text-xl font-bold text-primary-foreground">{step.number}</span>
                 </div>
-                <h2 className="text-4xl font-black text-foreground">{step.title}</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-foreground mb-1">{step.title}</h2>
               </div>
-              <p className="text-xl font-semibold text-muted-foreground mb-8 leading-relaxed">{step.description}</p>
+              <p className="text-md font-semibold text-muted-foreground leading-relaxed">{step.description}</p>
               <ul className="space-y-3 text-muted-foreground">
                 {step.bullets.map((bullet, i) => (
                   <li key={i} className="flex items-center">

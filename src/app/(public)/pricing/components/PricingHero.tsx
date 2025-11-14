@@ -1,18 +1,18 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { fadeUpVariant } from '@/utils/animation.util'
+import { fadeDownVariant } from '@/utils/animation.util'
 
 export function PricingHero() {
   return (
     <section className="py-20 text-center">
       <div className="container mx-auto px-4">
-        <motion.h1 className="mb-8 text-5xl font-black text-foreground md:text-6xl lg:text-7xl" variants={fadeUpVariant} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <motion.h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground mb-4" variants={fadeDownVariant} initial="hidden" whileInView="show" viewport={{ once: true }}>
           Simple, Transparent Pricing
         </motion.h1>
         <motion.p
-          className="mx-auto mb-16 max-w-3xl text-2xl font-semibold leading-relaxed text-muted-foreground md:text-3xl"
-          variants={fadeUpVariant}
+          className="text-2xl md:text-2xl font-semibold text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+          variants={fadeDownVariant}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}

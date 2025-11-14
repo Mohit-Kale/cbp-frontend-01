@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FindExpertsFilters } from './FindExpertsFilters'
 import { ExpertCard } from './ExpertCard'
 import { useConsultantsQuery } from '@/redux/services/consultant.api'
@@ -13,60 +13,70 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface FindExpertResultsProps {
   filters: { name: string; skills: string[]; specialtyId: number[] }
   onFilterChange: (filters: { name: string; skills: string[]; specialtyId: number[] }) => void
+  forceLoading?: boolean
+  onResultsLoaded?: () => void
 }
 
-export function FindExpertResults({ filters, onFilterChange }: FindExpertResultsProps) {
+export function FindExpertResults({ filters, onFilterChange, forceLoading = false, onResultsLoaded }: FindExpertResultsProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const pageLimit = 4
+  const [sortOrder, setSortOrder] = useState<'lowestRate' | 'highestRate' | 'mostRecent' | ''>('')
+  const pageLimit = 6
 
-  // Fetch consultants with filters and pagination
-  const { data, isLoading, error } = useConsultantsQuery({
+  // 🔍 Fetch consultants using Redux query (server-driven filters)
+  const { data, isLoading, isFetching, error } = useConsultantsQuery({
     page: currentPage,
     limit: pageLimit,
     name: filters.name || undefined,
-    specialtyId: filters.specialtyId.length > 0 ? filters.specialtyId : undefined,
+    specialtyId: filters.specialtyId.length ? filters.specialtyId : undefined,
   })
 
-  // // Debug: Log when filters or data changes
-  // useEffect(() => {
-  //   console.log('🔍 Current Filters:', filters)
-  //   console.log('📄 Current Page:', currentPage)
-  //   console.log('📊 API Response:', data)
-  //   console.log('🔄 Is Fetching:', isFetching)
-  // }, [filters, currentPage, data, isFetching])
+  // ✅ Reset page on filter change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters])
+
+  // ✅ Notify parent when results finish loading (for scroll sync)
+  useEffect(() => {
+    if (!isFetching && !isLoading && onResultsLoaded) {
+      onResultsLoaded()
+    }
+  }, [isFetching, isLoading, onResultsLoaded])
 
   const handleFilterChange = (newFilters: typeof filters) => {
     const filtersChanged = newFilters.name !== filters.name || newFilters.skills.join(',') !== filters.skills.join(',') || newFilters.specialtyId.join(',') !== filters.specialtyId.join(',')
 
     if (filtersChanged) {
       onFilterChange(newFilters)
-      setCurrentPage(1)
     }
   }
 
   const handlePageChange = (page: number) => {
+    if (page < 1 || page > (data?.totalPages || 1)) return
     setCurrentPage(page)
-    if (window.scrollY > 800) {
-      window.scrollTo({ top: 500, behavior: 'smooth' })
-    }
+  }
+
+  const handleSortChange = (value: string) => {
+    setSortOrder(value as typeof sortOrder)
+    setCurrentPage(1)
   }
 
   const totalPages = data?.totalPages || 1
   const hasResults = data?.list && data.list.length > 0
+  const loading = isLoading || forceLoading
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid lg:grid-cols-4 gap-6">
-        {/* Filters Sidebar - Using your FindExpertsFilters component */}
+        {/* 🧭 Sidebar Filters */}
         <FindExpertsFilters filters={filters} onFilterChange={handleFilterChange} />
 
-        {/* Results Section */}
+        {/* 🔎 Results Section */}
         <div className="lg:col-span-3">
-          {/* Results Header */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-3 mt-3">
             <div className="text-md text-muted-foreground">
-              {isLoading ? (
-                'Loading...'
+              {loading ? (
+                'Loading experts...'
               ) : (
                 <>
                   Showing {data?.list.length || 0} of {data?.totalItems || 0} experts
@@ -74,20 +84,20 @@ export function FindExpertResults({ filters, onFilterChange }: FindExpertResults
                 </>
               )}
             </div>
-            <Select>
+            {/* <Select onValueChange={handleSortChange} value={sortOrder}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by relevance " />
+                <SelectValue placeholder="Sort by relevance" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="lowestRate">Lowest rate first</SelectItem>
                 <SelectItem value="highestRate">Highest rate first</SelectItem>
                 <SelectItem value="mostRecent">Most recent</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
 
-          {/* Loading State */}
-          {isLoading && (
+          {/* Loader */}
+          {loading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
@@ -97,10 +107,10 @@ export function FindExpertResults({ filters, onFilterChange }: FindExpertResults
           {error && <AlertError title="Failed to load experts" description="Please try again later." />}
 
           {/* No Results */}
-          {!isLoading && !error && !hasResults && <NoRecordsFound />}
+          {!loading && !error && !hasResults && <NoRecordsFound />}
 
-          {/* Expert Cards Grid */}
-          {!isLoading && hasResults && (
+          {/* Experts Grid */}
+          {!loading && hasResults && (
             <>
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {data.list.map((expert) => (
@@ -118,11 +128,9 @@ export function FindExpertResults({ filters, onFilterChange }: FindExpertResults
 
                   <div className="flex items-center gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                      // Show first page, last page, current page, and pages around current
                       const showPage = page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)
 
                       if (!showPage) {
-                        // Show ellipsis
                         if (page === currentPage - 2 || page === currentPage + 2) {
                           return (
                             <span key={page} className="px-2 text-muted-foreground">

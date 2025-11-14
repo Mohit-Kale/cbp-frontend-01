@@ -1,248 +1,417 @@
-/* ===========================
-   FullCalendar Global Cleanup
-   =========================== */
-.fc {
-  background-color: transparent !important;
-  border: none !important;
-  font-family: inherit !important;
-  height: 500px !important;
-}
-
-/* ========================
-   Toolbar (Desktop)
-   ======================== */
-.fc .fc-toolbar-title {
-  color: hsl(var(--foreground));
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-.fc .fc-toolbar.fc-header-toolbar {
-  margin-bottom: 1rem;
-}
-.fc .fc-button {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-  border: none !important;
-  border-radius: 0.5rem !important;
-  padding: 0.4rem 0.75rem !important;
-  font-weight: 500;
-  box-shadow: none !important;
-  transition: 0.15s ease-in-out;
-}
-.fc .fc-button:hover {
-  filter: brightness(0.95);
-}
-.fc .fc-button-primary:disabled {
-  background-color: hsl(var(--muted)) !important;
-  color: hsl(var(--muted-foreground)) !important;
-}
-
-/* ========================
-   Responsive Toolbar (Mobile)
-   ======================== */
-@media (max-width: 640px) {
-  .fc .fc-toolbar {
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-start;
+  /* ===========================
+    FullCalendar Global Cleanup
+    =========================== */
+  .fc {
+    background-color: transparent !important;
+    border: none !important;
+    font-family: inherit !important;
+    height: 500px !important;
   }
+
+  /* ========================
+    Toolbar (Desktop)
+    ======================== */
   .fc .fc-toolbar-title {
-    font-size: 1rem;
+    color: hsl(var(--foreground));
+    font-size: 1.25rem;
+    font-weight: 700;
   }
+
+  .fc .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 1rem;
+  }
+
   .fc .fc-button {
-    padding: 0.35rem 0.6rem !important;
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    padding: 0.4rem 0.75rem !important;
+    font-weight: 500;
+    box-shadow: none !important;
+    transition: 0.15s ease-in-out;
+  }
+
+  .fc .fc-button:hover {
+    filter: brightness(0.95);
+  }
+
+  .fc .fc-button-primary:disabled {
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  /* ========================
+    Responsive Toolbar (Mobile)
+    ======================== */
+  @media (max-width: 640px) {
+    .fc .fc-toolbar {
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 1rem;
+    }
+
+    .fc .fc-button {
+      padding: 0.35rem 0.6rem !important;
+      font-size: 0.8rem;
+    }
+  }
+
+  /* ========================
+    Column Headers
+    ======================== */
+  .fc .fc-col-header-cell-cushion {
+    color: hsl(var(--foreground)) !important;
+    font-weight: 500;
+    padding: 0.5rem 0 !important;
+  }
+
+  /* ========================
+    Grid + Borders + Day Numbers
+    ======================== */
+  .fc-theme-standard .fc-scrollgrid,
+  .fc-theme-standard th,
+  .fc-theme-standard td {
+    border: 1px solid hsl(var(--border));
+  }
+
+  .fc .fc-daygrid-day-number {
+    color: hsl(var(--foreground));
     font-size: 0.8rem;
+    padding: 0.3rem 0.4rem !important;
   }
-}
 
-/* ========================
-   Column Headers
-   ======================== */
-.fc .fc-col-header-cell-cushion {
-  color: hsl(var(--foreground)) !important;
-  font-weight: 500;
-  padding: 0.5rem 0 !important;
-}
+  /* ========================
+    Highlight Today
+    ======================== */
+  .fc .fc-daygrid-day.fc-day-today,
+  .fc .fc-timegrid-col.fc-day-today {
+    background-color: hsl(var(--accent) / 0.07) !important;
+    border-radius: 4px;
+  }
 
-/* ========================
-   Grid + Borders + Day Numbers
-   ======================== */
-.fc-theme-standard .fc-scrollgrid,
-.fc-theme-standard th,
-.fc-theme-standard td {
-  border: 1px solid hsl(var(--border));
-}
-.fc .fc-daygrid-day-number {
-  color: hsl(var(--foreground));
-  font-size: 0.8rem;
-  padding: 0.3rem 0.4rem !important;
-}
-
-/* ========================
-   Highlight Today
-   ======================== */
-.fc .fc-daygrid-day.fc-day-today,
-.fc .fc-timegrid-col.fc-day-today {
-  background-color: hsl(var(--accent) / 0.07) !important;
-  border-radius: 4px;
-}
-
-/* ========================
-   TimeGrid Layout (Desktop)
-   ======================== */
-.fc .fc-timegrid-slot {
-  height: 64px;
-  border-top-color: hsl(var(--border)) !important;
-  border-bottom-color: transparent !important;
-}
-.fc .fc-timegrid-slot-label {
-  color: hsl(var(--muted-foreground));
-  font-weight: 500;
-  font-size: 0.85rem;
-}
-
-/* ========================
-   TimeGrid Layout (Mobile)
-   ======================== */
-@media (max-width: 640px) {
+  /* ========================
+    TimeGrid Layout (Desktop)
+    ======================== */
   .fc .fc-timegrid-slot {
-    height: 42px; /* tighter grid */
+    height: 64px;
+    border-top-color: hsl(var(--border)) !important;
+    border-bottom-color: transparent !important;
   }
+
   .fc .fc-timegrid-slot-label {
-    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+    font-size: 0.85rem;
   }
-}
 
-/* ========================
-   Event Pills (Shared)
-   ======================== */
-.fc .fc-event {
-  border: none !important;
-  padding: 0px !important;
-  border-radius: 0px !important;
-  font-weight: 600;
-  font-size: 0.78rem;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  white-space: normal !important;
-  text-align: center;
-}
-.fc .fc-event a {
-  color: inherit !important;
-  text-decoration: none;
-}
+  /* ========================
+    TimeGrid Layout (Mobile)
+    ======================== */
+  @media (max-width: 640px) {
+    .fc .fc-timegrid-slot {
+      height: 42px;
+      /* tighter grid */
+    }
 
-.fc-timegrid-event .fc-event-main {
+    .fc .fc-timegrid-slot-label {
+      font-size: 0.7rem;
+    }
+  }
+
+  /* ========================
+    Event Pills (Shared)
+    ======================== */
+  .fc .fc-event {
+    border: none !important;
+    padding: 0px !important;
+    border-radius: 0px !important;
+    font-weight: 600;
+    font-size: 0.78rem;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    white-space: normal !important;
+    text-align: center;
+  }
+
+  .fc .fc-event a {
+    color: inherit !important;
+    text-decoration: none;
+  }
+
+  .fc-timegrid-event .fc-event-main {
     padding: 1px 1px 0px;
     display: flex;
     align-content: center;
     justify-content: center;
     align-items: center;
-}
-
-/* ========================
-   Available (Green)
-   ======================== */
-.fc-event-available {
-  background-color: #e0ffeb !important;
-  color: #16a34a !important;
-}
-/* ========================
-   Booked (Gray)
-   ======================== */
-.fc-event-booked {
-  background-color: hsl(var(--muted)) !important;
-  color: hsl(var(--muted-foreground)) !important;
-}
-
-/* ========================
-   MultiMonth Tweaks
-   ======================== */
-.fc-multimonth-title {
-  color: hsl(var(--foreground));
-  font-weight: 700;
-}
-.fc-multimonth {
-  --fc-border-color: hsl(var(--border));
-}
-
-/* View-switch buttons (year/week/day/month) → wrap & compact */
-  .fc .fc-button-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
   }
 
- .fc .fc-toolbar-chunk {
-    display: flex;
-    gap: .5rem;
-}
-
-.fc .fc-toolbar-chunk button {
-  margin: 0 !important;
-}
-
-/* ===========================
-   MOBILE RESPONSIVE FIXES
-   =========================== */
-
-/* Stack toolbar on mobile */
-@media (max-width: 640px) {
-  .fc .fc-toolbar {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.5rem !important;
+  /* ========================
+    Available (Green)
+    ======================== */
+  .fc-event-available {
+    background-color: #e0ffeb !important;
+    color: #16a34a !important;
   }
 
-  /* Title smaller */
-  .fc .fc-toolbar-title {
-    font-size: 1rem !important;
+  /* ========================
+    Booked (Gray)
+    ======================== */
+  .fc-event-booked {
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  /* ========================
+    MultiMonth Tweaks
+    ======================== */
+  .fc-multimonth-title {
+    color: hsl(var(--foreground));
+    font-weight: 700;
+  }
+
+  .fc-multimonth {
+    --fc-border-color: hsl(var(--border));
+  }
+
+  /* ==============================
+    Scrollable "More" Popover Fix
+    ============================== */
+
+  /* Outer popover container */
+  .fc-popover {
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+    background-color: hsl(var(--card)) !important;
+    overflow: hidden !important;
+    z-index: 9999 !important;
+  }
+
+  /* The inner content area — make scrollable */
+  .fc-popover-body {
+    max-height: 250px !important;
+    /* You can adjust this to taste */
+    overflow-y: auto !important;
+    padding-right: 4px !important;
+  }
+
+  /* Hide ugly default scrollbars on modern browsers */
+  .fc-popover-body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .fc-popover-body::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground));
+    border-radius: 3px;
+  }
+
+  /* Popover header (the date) */
+  .fc-popover-header {
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--muted-foreground)) !important;
     font-weight: 600 !important;
+    text-align: center;
+    padding: 0.4rem 0.6rem !important;
+    border-bottom: 1px solid hsl(var(--border)) !important;
+  }
+
+  /* Event styling inside popover */
+  .fc-popover-body .fc-event {
+    margin-bottom: 4px !important;
+    padding: 4px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.75rem !important;
   }
 
   /* View-switch buttons (year/week/day/month) → wrap & compact */
   .fc .fc-button-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: .5rem;
   }
 
-  .fc .fc-button {
-    padding: 0.3rem 0.55rem !important;
-    font-size: 0.75rem !important;
-    border-radius: 6px !important;
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    gap: .5rem;
   }
 
-  /* Reduce grid height so it doesn’t look empty */
-  .fc .fc-timegrid-slot {
-    height: 40px !important;
+  .fc .fc-toolbar-chunk button {
+    margin: 0 !important;
   }
 
-  /* Shrink day headers */
-  .fc .fc-col-header-cell-cushion {
-    font-size: 0.7rem !important;
-    padding: 0.35rem 0 !important;
+  /* ===========================
+    MOBILE RESPONSIVE FIXES
+    =========================== */
+
+  /* Stack toolbar on mobile */
+  @media (max-width: 640px) {
+    .fc .fc-toolbar {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.5rem !important;
+    }
+
+    /* Title smaller */
+    .fc .fc-toolbar-title {
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+    }
+
+    /* View-switch buttons (year/week/day/month) → wrap & compact */
+    .fc .fc-button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+
+    .fc .fc-button {
+      padding: 0.3rem 0.55rem !important;
+      font-size: 0.75rem !important;
+      border-radius: 6px !important;
+    }
+
+    /* Reduce grid height so it doesn’t look empty */
+    .fc .fc-timegrid-slot {
+      height: 40px !important;
+    }
+
+    /* Shrink day headers */
+    .fc .fc-col-header-cell-cushion {
+      font-size: 0.7rem !important;
+      padding: 0.35rem 0 !important;
+    }
+
+    /* Day numbers */
+    .fc .fc-daygrid-day-number {
+      font-size: 0.7rem !important;
+      padding: 0.2rem !important;
+    }
+
+    /* Force event text to stay centered & never overflow */
+    .fc .fc-event {
+      font-size: 0.68rem !important;
+      padding: 4px 6px !important;
+      white-space: normal !important;
+      line-height: 1.2 !important;
+    }
+
+    /* Legend goes vertical for better readability */
+    .calendar-legend {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
   }
 
-  /* Day numbers */
-  .fc .fc-daygrid-day-number {
-    font-size: 0.7rem !important;
-    padding: 0.2rem !important;
-  }
+  /* ========================
+    MultiMonth (Single Month Fix)
+    ======================== */
 
-  /* Force event text to stay centered & never overflow */
-  .fc .fc-event {
-    font-size: 0.68rem !important;
-    padding: 4px 6px !important;
-    white-space: normal !important;
-    line-height: 1.2 !important;
-  }
-
-  /* Legend goes vertical for better readability */
-  .calendar-legend {
+  /* Make the single-month view take full width and look centered */
+  .fc-multimonth {
+    display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    align-items: stretch;
+    width: 100%;
   }
-}
+
+  /* Remove unnecessary grid compression */
+  .fc-multimonth-multicol {
+    display: flex;
+    flex-wrap: nowrap !important;
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Ensure month grid stretches evenly */
+  .fc-multimonth-month {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: 100%;
+    padding: 0.25rem;
+  }
+
+  /* Fix day cells alignment & spacing */
+  .fc .fc-daygrid-day-frame {
+    min-height: 61px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  /* Keep the full month height readable */
+  .fc-multiMonthMonth-view {
+    height: auto !important;
+    min-height: 600px !important;
+  }
+
+  /* Make popover scrollable & visually clean */
+  .fc-popover-body {
+    max-height: 250px !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+  }
+
+  /* Nice custom scroll for popover (WebKit) */
+  .fc-popover-body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .fc-popover-body::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground));
+    border-radius: 3px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .fc-multimonth-month {
+      padding: 0;
+      min-width: 100%;
+    }
+
+    .fc .fc-daygrid-day-frame {
+      min-height: 60px !important;
+    }
+
+    .fc-multiMonthMonth-view {
+      min-height: 450px !important;
+    }
+  }
+
+  /* custom style */
+  .fc .fc-multimonth-multicol .fc-daygrid-more-link {
+    border: 0 !important;
+    display: block;
+    float: none;
+    padding: 1px;
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 14px;
+    background: #4387f4;
+    padding: 2px 6px;
+    border-radius: 12px;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+ .fc .fc-daygrid-more-link {
+    background: #4387f4;
+    display: block;
+    float:none;
+    padding: 1px;
+    position: absolute;
+    bottom: 20px;
+    font-size: 8px;
+    padding: 3px;
+    border-radius: 12px;
+    color: #fff;
+  }

@@ -12,8 +12,8 @@ export function ValueProposition() {
     <section className="bg-muted/50 py-20">
       <div className="container mx-auto px-4">
         <motion.div className="mx-auto max-w-4xl text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <h2 className="mb-4 text-3xl font-bold text-foreground">Why Companies Choose Boardtide</h2>
-          <p className="text-muted-foreground">Compare the value of executive guidance versus traditional consulting</p>
+          <h2 className="text-3xl md:text-4xl font-black text-foreground mb-1">Why Companies Choose Boardtide</h2>
+          <p className="text-xl font-semibold text-muted-foreground max-w-3xl mx-auto leading-relaxed">Compare the value of executive guidance versus traditional consulting</p>
         </motion.div>
 
         <div className="grid gap-12 md:grid-cols-2">

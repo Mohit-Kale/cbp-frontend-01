@@ -8,14 +8,14 @@ import { Menu, X, LogOut, MapPin } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { paths } from '@/navigate/paths'
-import { useReduxDispatch, useReduxSelector } from '@/hooks/redux.hook'
+import { useReduxSelector } from '@/hooks/redux.hook'
 import { useAuthDialog } from '@/components/auth/useAuthDialog.hook'
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu'
 import Image from 'next/image'
 import { handleLogout } from '@/utils'
-import path from 'path'
 import { toast } from 'sonner'
 import { useProfileQuery } from '@/redux/services/auth.api'
+
 const boardtideLogo = '/assets/boardtide-logo.png'
 
 type NavLink = {
@@ -32,10 +32,19 @@ const CustomerHeader = () => {
   const pathname = usePathname()
   const { openAuthDialog } = useAuthDialog()
 
-  // Redux state
   const { isLoggedIn, userProfile } = useReduxSelector((state) => state.user)
   const userRole = userProfile.role
   const { data: userData } = useProfileQuery()
+  const resumeUrl = userData?.consultantDocuments?.find((d) => d.documentType === 'CV')?.fileUrl
+  const isVerified = userData?.isVerified
+
+  const isConsultant = isLoggedIn && userRole === 'consultant'
+  const isProfilePage = pathname.includes('/consultant/profile')
+
+  // Check states
+  const isIncomplete = isConsultant && !resumeUrl
+  const isUnverified = isConsultant && resumeUrl && !isVerified
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -53,18 +62,14 @@ const CustomerHeader = () => {
       ?.join('')
       ?.toUpperCase()
   }
-  const isConsultantUnverified = isLoggedIn && userRole === 'consultant' && !userData?.isVerified
-  console.log(userData?.isVerified)
+
   const navLinks: NavLink[] = [
     { href: paths.consultantDashboard(), label: 'Dashboard', requiresAuth: true },
     { href: paths.consultantProfile(), label: 'Profile', requiresAuth: true },
     { href: paths.consultantSlots(), label: 'Schedules', requiresAuth: true },
     { href: paths.consultantMyBookings(), label: 'My Bookings', icon: <MapPin className="w-4 h-4" />, requiresAuth: true },
-    // { href: paths.pricing(), label: 'Pricing', requiresAuth: false },
-    // { href: paths.recruitment(), label: 'Recruitment', requiresAuth: false },
   ]
 
-  // Filter links based on role/auth
   const filteredLinks = useMemo(() => {
     return navLinks.filter((link) => {
       if (!link.requiresAuth && !link.roles) return true
@@ -73,22 +78,36 @@ const CustomerHeader = () => {
       return true
     })
   }, [isLoggedIn, userRole])
-  console.log('fnjoignfon', isConsultantUnverified)
+
+  const isNavigationDisabled = isConsultant && (isIncomplete || isUnverified)
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, linkHref: string) => {
+    if (isNavigationDisabled && linkHref !== paths.consultantProfile()) {
+      e.preventDefault()
+      // Recalculate states to be sure
+      const resume = userData?.consultantDocuments?.find((d) => d.documentType === 'CV')?.fileUrl || ''
+      const verified = userData?.isVerified ?? false
+      if (!resume) {
+        toast.error('Please complete your profile before proceeding!')
+      } else if (resume && !verified) {
+        toast.error('Your profile is complete and currently under review. Please complete your payment setup to avoid delays and start accepting bookings sooner.')
+      }
+    }
+  }
+
   const renderNavLinks = () => {
     return filteredLinks.map((link, index) => {
       const isActive = pathname.startsWith(link.href)
-      const isDisabled = isConsultantUnverified && link.href !== paths.consultantProfile()
-      const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        if (isDisabled) {
-          e.preventDefault()
-          toast.error('Your profile is under review.')
-        }
-      }
+      const isDisabled = isNavigationDisabled && link.href !== paths.consultantProfile()
 
       return (
         <NavigationMenuItem key={index}>
           <NavigationMenuLink asChild>
-            <Link href={isDisabled ? '#' : link.href} onClick={handleNavClick} className={`transition-colors ${isActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}>
+            <Link
+              href={isDisabled ? '#' : link.href}
+              onClick={(e) => handleNavClick(e, link.href)}
+              className={`transition-colors ${isActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
               {link.label}
             </Link>
           </NavigationMenuLink>
@@ -96,8 +115,6 @@ const CustomerHeader = () => {
       )
     })
   }
-
-  // Dashboard path by role
 
   return (
     <header className="border-b border-border bg-background">
@@ -157,11 +174,22 @@ const CustomerHeader = () => {
       {isMenuOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="px-4 py-4 space-y-3">
-            {filteredLinks.map((link) => (
-              <Link key={link.label} href={link.href} onClick={() => setIsMenuOpen(false)} className="block text-foreground hover:text-primary transition-colors">
-                {link.label}
-              </Link>
-            ))}
+            {filteredLinks.map((link) => {
+              const isDisabled = isNavigationDisabled && link.href !== paths.consultantProfile()
+              return (
+                <Link
+                  key={link.label}
+                  href={isDisabled ? '#' : link.href}
+                  onClick={(e) => {
+                    handleNavClick(e, link.href)
+                    setIsMenuOpen(false)
+                  }}
+                  className={`block transition-colors ${isDisabled ? 'text-muted-foreground opacity-50 cursor-not-allowed' : 'text-foreground hover:text-primary'}`}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
 
             {isLoggedIn ? (
               <Button onClick={() => handleLogout()} size="sm" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-3">

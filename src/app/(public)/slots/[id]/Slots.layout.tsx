@@ -9,7 +9,8 @@ import SlotsComponent from './_componenets/Slots.component'
 import moment from 'moment'
 import BookingDialog from './_componenets/booking-dialog/BookingDialog.component'
 import { toast } from 'sonner'
-import ConsultantScheduleCalendar from './_componenets/TrainerScheduleCalendar.component'
+import ConsultantScheduleCalendar from './_componenets/ConsultantScheduleCalendar.component'
+import { Loader2 } from 'lucide-react'
 
 export default function ConsultantSlotsLayout() {
   const { id } = useParams<{ id: string }>()
@@ -37,7 +38,7 @@ export default function ConsultantSlotsLayout() {
     if (slotData?.availability) {
       const mapped = slotData.availability.map((slot: any) => ({
         id: slot.id,
-        title: slot.type == 'available' ? 'Available' : 'Booked',
+        title: slot.type,
         start: slot.start,
         end: slot.end,
         type: slot.type,
@@ -47,7 +48,14 @@ export default function ConsultantSlotsLayout() {
     }
   }, [slotData])
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin mb-2" />
+        <span>Loading consultant details…</span>
+      </div>
+    )
+  }
   if (!consultant) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Consultant not found</div>
 
   const handleBookSlot = ({ start, end, viewType }: any) => {
@@ -61,7 +69,7 @@ export default function ConsultantSlotsLayout() {
       openAuthDialog('signin')
       return
     }
-
+    console.log('nsdeofgnoifn', role)
     if (role !== 'user') {
       toast.error('Only users can book sessions.')
       return
@@ -85,18 +93,10 @@ export default function ConsultantSlotsLayout() {
 
     setShowBookingForm(true)
   }
-  const handleDialogDateChange = (date: string) => {
-    console.log('[ConsultantSlotsLayout] Dialog date changed:', date)
-    // refetch slots for this new date
-    setWeekRange({
-      startDate: date,
-      endDate: date, // or your logic for week range
-    })
-  }
 
   const handleClickBooking = () => {
-    setShowBookingForm(true)
     setBookingSource({ fromCalendar: false })
+    setShowBookingForm(true)
   }
 
   return (
@@ -122,14 +122,13 @@ export default function ConsultantSlotsLayout() {
         setShowBookingForm={(val) => {
           setShowBookingForm(val)
           if (!val) {
-            setSelectedSlot(null) // reset selected slot
+            setSelectedSlot(null)
             setBookingSource({ fromCalendar: false }) // default mode
           }
         }}
         selectedSlot={selectedSlot}
         consultant={consultant}
         events={events}
-        onDateChange={handleDialogDateChange}
       />
     </div>
   )

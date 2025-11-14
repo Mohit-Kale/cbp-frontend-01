@@ -71,7 +71,11 @@ export function ExpertCard({ expert }: { expert: Consultant }) {
                   {exp}
                 </span>
               ))}
-              {remainingExpertise > 0 && <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full">+{remainingExpertise} more</span>}
+              {remainingExpertise > 0 && (
+                <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full cursor-pointer" onClick={() => router.push(paths.userViewProfile(expert.id))}>
+                  +{remainingExpertise} more
+                </span>
+              )}
             </div>
           </div>
         )}

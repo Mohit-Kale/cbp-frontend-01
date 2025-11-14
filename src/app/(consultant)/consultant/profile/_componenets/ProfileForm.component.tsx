@@ -25,6 +25,8 @@ import { normalizeNullArrays } from '@/utils/normalizeData'
 import { normalizeData } from '@/utils/normalizeData'
 import { Currencies } from '@/dto/Currencies.dto'
 import { useOnBoardingMutation } from '@/redux/services/consultant.stripe.api'
+import { useRouter } from 'next/navigation'
+import { paths } from '@/navigate/paths'
 
 export default function ProfileForm() {
   const { data } = useProfileQuery()
@@ -109,7 +111,7 @@ export default function ProfileForm() {
         { name: data?.profile?.references?.[0]?.name ?? '', title: data?.profile?.references?.[0]?.title ?? '', email: data?.profile?.references?.[0]?.email ?? '', phone: data?.profile?.references?.[0]?.phone ?? '' },
         { name: data?.profile?.references?.[1]?.name ?? '', title: data?.profile?.references?.[1]?.title ?? '', email: data?.profile?.references?.[1]?.email ?? '', phone: data?.profile?.references?.[1]?.phone ?? '' },
       ],
-      resumeUrl: existingResumeUrl ?? undefined,
+      resumeUrl: existingResumeUrl ?? '',
       specialties: data?.consultantSpecialties?.map((s) => s.specialtyId) ?? [],
       currencyId: data?.profile?.currency?.id ?? 0,
       hourlyRate: data?.profile?.hourlyRate?.toString() ?? '',
@@ -163,6 +165,20 @@ export default function ProfileForm() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    const maxFileSizeMB = 5
+    const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    if (!allowedTypes.includes(file.type)) {
+      // Show a toast, alert, or form error
+      toast.error('Only PDF or Docs are allowed.')
+      e.target.value = '' // reset input
+      return
+    }
+    if (file.size > maxFileSizeBytes) {
+      toast.error(`File size must be under ${maxFileSizeMB} MB.`)
+      e.target.value = '' // reset input
+      return
+    }
     setUploadedFile(file)
     setIsParsing(true)
 
@@ -186,9 +202,9 @@ export default function ProfileForm() {
 
       setActiveTab('dynamic')
     } catch (err) {
-      console.error('Upload failed:', err)
+      // console.error('Upload failed:', err)
       resetDynamicState()
-      toast.error('Resume upload failed. Please try again.')
+      // toast.error('Resume upload failed. Please try again.')
     } finally {
       setIsParsing(false)
     }
@@ -203,53 +219,109 @@ export default function ProfileForm() {
     form.setValue('resumeUrl', '')
     setFileInputKey((prev) => prev + 1)
   }, [form])
-
+  const router = useRouter()
   const onSubmit = async (formData: TCombinedProfile) => {
     try {
       const normalizedData = normalizeData(formData)
       const { resumeUrl, ...rest } = normalizedData
-      const response = await updateProfile(rest).unwrap()
+      const response = await updateProfile(rest)
 
       if (response) {
         dispatch(updateUser(response))
-        // toast.success('Profile updated successfully!')
         setActiveTab('payment')
+        if (data?.profile?.stripeAccountStatus === 'VERIFIED') {
+          // setActiveTab('static')
+          router.push(paths.consultantDashboard())
+          return
+        }
       }
     } catch (err) {
-      console.error('Update failed:', err)
+      // console.error('Update failed:', err)
       toast.error('Profile update failed. Please try again.')
     }
   }
 
   const onError = React.useCallback(
     (errors: any) => {
-      console.log('Form errors:', errors)
-
-      // Show toast notification
       toast.error('Please fill all required fields before submitting.', {
         duration: 5000,
         position: 'top-right',
       })
 
-      // Get the first error field name
-      const firstErrorField = Object.keys(errors)[0]
+      const errorFields = Object.keys(errors)
+      if (errorFields.length === 0) return
 
-      if (firstErrorField) {
-        // Check if error is in dynamic fields
-        const isDynamicField = dynamicFields && firstErrorField in dynamicFields
+      /* ---------------------------------------------------
+       1) BUILD REFERENCE FIELD ORDER (ACCURATE)
+       --------------------------------------------------- */
+      let referenceFieldOrder: string[] = []
 
-        // Switch to the appropriate tab
-        if (isDynamicField) {
-          setActiveTab('dynamic')
-        } else {
-          setActiveTab('static')
-        }
+      if (errors.references && typeof errors.references === 'object') {
+        const referenceIndexes = Object.keys(errors.references) // usually ['0','1']
 
-        // Wait for tab switch animation, then scroll and focus
-        setTimeout(() => {
-          scrollToField(firstErrorField)
-        }, 100)
+        // EXACT order based on your form structure
+        const refInnerOrder = ['name', 'title', 'email', 'phone']
+
+        referenceIndexes.forEach((refIndex) => {
+          refInnerOrder.forEach((inner) => {
+            referenceFieldOrder.push(`references.${refIndex}.${inner}`)
+          })
+        })
       }
+
+      /* ---------------------------------------------------
+       2) DEFINE FULL FORM UI ORDER
+       --------------------------------------------------- */
+      const formFieldOrder: string[] = [
+        // static user info
+        'fullName',
+        'email',
+        'phone',
+
+        // payment
+        'currencyId',
+        'hourlyRate',
+
+        // address
+        'street',
+        'city',
+        'state',
+        'zipcode',
+
+        // other static
+        'specialties',
+        // reference fields (in order)
+        ...referenceFieldOrder,
+        'resumeUrl',
+
+        // dynamic custom fields
+        ...Object.keys(dynamicFields),
+      ]
+
+      /* ---------------------------------------------------
+       3) FIND FIRST ERROR BASED ON UI ORDER
+       --------------------------------------------------- */
+      const firstErrorField = formFieldOrder.find((f) => errorFields.includes(f)) || errorFields[0]
+
+      /* ---------------------------------------------------
+       4) DETERMINE WHICH TAB TO OPEN
+       --------------------------------------------------- */
+      let targetTab: 'static' | 'dynamic' = 'static'
+
+      if (firstErrorField.startsWith('references.')) {
+        targetTab = 'static'
+      } else if (Object.keys(dynamicFields).includes(firstErrorField)) {
+        targetTab = 'dynamic'
+      }
+
+      setActiveTab(targetTab)
+
+      /* ---------------------------------------------------
+       5) SCROLL TO FIRST ERROR FIELD
+       --------------------------------------------------- */
+      setTimeout(() => {
+        scrollToField(firstErrorField)
+      }, 150)
     },
     [dynamicFields, scrollToField],
   )
@@ -361,7 +433,7 @@ export default function ProfileForm() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       {(['street', 'city', 'state', 'zipcode'] as const).map((field) => (
-                        <RenderField key={field} control={form.control} name={field} label={field.charAt(0).toUpperCase() + field.slice(1)} />
+                        <RenderField key={field} control={form.control} name={field} label={field.charAt(0).toUpperCase() + field.slice(1)} placeholder={field.charAt(0).toUpperCase() + field.slice(1)} />
                       ))}
                     </div>
                   </section>
@@ -404,7 +476,14 @@ export default function ProfileForm() {
                         <div key={item.fieldId} className="space-y-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {(['name', 'title', 'email', 'phone'] as const).map((sub) => (
-                              <RenderField key={sub} control={form.control} name={`references.${index}.${sub}`} label={sub.charAt(0).toUpperCase() + sub.slice(1)} required />
+                              <RenderField
+                                key={sub}
+                                control={form.control}
+                                name={`references.${index}.${sub}`}
+                                label={sub.charAt(0).toUpperCase() + sub.slice(1)}
+                                required
+                                placeholder={sub.charAt(0).toUpperCase() + sub.slice(1)}
+                              />
                             ))}
                           </div>
 

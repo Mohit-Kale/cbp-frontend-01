@@ -2,6 +2,7 @@ import React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import moment from 'moment'
 import { MyBooking } from '@/redux/services/consultant.api'
+import { Badge } from '@/components/ui/badge'
 
 interface UseBookingColumnsProps {
   onView: (row: MyBooking) => void
@@ -31,6 +32,11 @@ export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
         cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
       },
       {
+        accessorKey: 'scheduleDate',
+        header: ' Scheduled Date',
+        cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
+      },
+      {
         accessorFn: (row) => `${moment(row.startTime, 'HH:mm:ss').format('hh:mm A')} - ${moment(row.endTime, 'HH:mm:ss').format('hh:mm A')}`,
         id: 'slot',
         header: 'Slot',
@@ -39,8 +45,16 @@ export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
         id: 'status',
         accessorKey: 'status',
         header: 'Status',
-        cell: ({ getValue }) => getValue() as string,
+        cell: ({ getValue }) => {
+          const value = (getValue() as string) || ''
+
+          // Capitalize first letter, rest lowercase
+          const formatted = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
+
+          return <Badge variant="default">{formatted}</Badge>
+        },
       },
+
       // {
       //   id: 'actions',
       //   header: 'Actions',

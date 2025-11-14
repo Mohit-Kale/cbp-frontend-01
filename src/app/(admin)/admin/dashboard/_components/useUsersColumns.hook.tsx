@@ -37,6 +37,14 @@ export default function useUsersColumns() {
           return <StatusBadge value={formatted} />
         },
       },
+      // {
+      //   accessorKey: 'isVerified',
+      //   header: 'Verified',
+      //   cell: ({ getValue }) => {
+      //     const rawValue = getValue() as boolean
+      //     return <StatusBadge value={rawValue ? 'Verified' : 'Not Verified'} />
+      //   },
+      // },
     ],
     [],
   )

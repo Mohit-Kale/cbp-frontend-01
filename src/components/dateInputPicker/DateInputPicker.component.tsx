@@ -25,14 +25,15 @@ export default function DatePickerInput({ form, name, label, placeholder = 'Sele
 
   const fieldValue = form.watch(name)
 
-  // ✅ Sync displayed input when form value changes
+  // Sync input whenever form value changes
   useEffect(() => {
     if (!fieldValue) {
       setInputValue('')
       return
     }
+
     const parsed = moment(fieldValue)
-    setInputValue(parsed.isValid() ? parsed.format(format) : fieldValue)
+    setInputValue(parsed.isValid() ? parsed.format(format) : '')
   }, [fieldValue, format])
 
   const today = moment()
@@ -51,70 +52,84 @@ export default function DatePickerInput({ form, name, label, placeholder = 'Sele
     <FormField
       control={form.control}
       name={name}
-      render={({ field }) => (
-        <FormItem className="w-full">
-          {label && (
-            <FormLabel className="text-sm font-medium">
-              {label}
-              <span className="text-destructive"> *</span>
-            </FormLabel>
-          )}
+      render={({ field }) => {
+        // show empty if no date is selected
+        const displayValue = field.value ? moment(field.value).format(format) : ''
 
-          {!readOnly ? (
-            <Popover>
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <div className="relative w-full">
-                    <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 pointer-events-none" />
+        return (
+          <FormItem className="w-full">
+            {label && (
+              <FormLabel className="text-sm font-medium">
+                {label}
+                <span className="text-destructive"> *</span>
+              </FormLabel>
+            )}
 
-                    <Input
-                      className="pl-10 h-10 text-sm"
-                      placeholder={placeholder}
-                      value={inputValue}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setInputValue(val)
-                        const parsed = moment(val, format, true)
-                        if (parsed.isValid()) {
-                          field.onChange(parsed.format(format))
-                          setMonth(parsed.toDate())
-                        } else {
-                          field.onChange(val)
-                        }
-                      }}
-                    />
-                  </div>
-                </FormControl>
-              </PopoverTrigger>
+            {!readOnly ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <div className="relative w-full">
+                      <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 pointer-events-none" />
+                      <Input
+                        className="pl-10 h-10 text-sm"
+                        placeholder={placeholder}
+                        value={inputValue}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setInputValue(val)
 
-              <PopoverContent className="p-0 w-auto shadow-md border rounded-md" align="start">
-                <Calendar
-                  mode="single"
-                  captionLayout="dropdown"
-                  selected={fieldValue && moment(fieldValue).isValid() ? moment(fieldValue).toDate() : undefined}
-                  onSelect={(date) => {
-                    const formatted = date ? moment(date).format(format) : ''
-                    field.onChange(formatted)
-                    setInputValue(formatted)
-                    setMonth(date || moment().toDate())
-                  }}
-                  disabled={isDateDisabled}
-                  month={month}
-                  onMonthChange={setMonth}
-                  fromYear={fromYear}
-                  toYear={toYear}
-                />
-              </PopoverContent>
-            </Popover>
-          ) : (
-            <FormControl>
-              <Input className="pl-10 h-10 text-sm bg-gray-100 cursor-not-allowed" placeholder={placeholder} value={inputValue} readOnly />
-            </FormControl>
-          )}
+                          const parsed = moment(val, format, true)
 
-          <FormMessage />
-        </FormItem>
-      )}
+                          if (parsed.isValid()) {
+                            // store ISO string for Zod/string schema
+                            const iso = parsed.format('YYYY-MM-DD')
+                            field.onChange(iso)
+                            setMonth(parsed.toDate())
+                          } else {
+                            field.onChange('')
+                          }
+                        }}
+                      />
+                    </div>
+                  </FormControl>
+                </PopoverTrigger>
+
+                <PopoverContent className="p-0 w-auto shadow-md border rounded-md" align="start">
+                  <Calendar
+                    mode="single"
+                    captionLayout="dropdown"
+                    selected={field.value ? moment(field.value).toDate() : undefined}
+                    onSelect={(date) => {
+                      if (!date) {
+                        field.onChange('')
+                        setInputValue('')
+                        return
+                      }
+
+                      const iso = moment(date).format('YYYY-MM-DD')
+                      field.onChange(iso)
+                      setInputValue(moment(date).format(format))
+                      setMonth(date)
+                    }}
+                    disabled={isDateDisabled}
+                    month={month}
+                    onMonthChange={setMonth}
+                    fromYear={fromYear}
+                    toYear={toYear}
+                  />
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <FormControl>
+                <Input className="pl-10 h-10 text-sm bg-gray-100 cursor-not-allowed" placeholder={placeholder} value={displayValue} readOnly />
+              </FormControl>
+            )}
+
+            <FormMessage />
+          </FormItem>
+        )
+      }}
     />
   )
 }

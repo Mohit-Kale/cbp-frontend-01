@@ -8,9 +8,9 @@ export function ForExpertsCTA() {
   return (
     <section className="py-20 bg-gradient-to-r from-primary/10 to-accent/10 text-center">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-foreground mb-4">Ready to Share Your Expertise?</h2>
-        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">Join our selective network of technology executives and start earning by the hour</p>
-        <Button size="lg" className="shadow-lg" onClick={() => openAuthDialog('signup', 'CONSULTANT')}>
+        <h2 className="text-3xl md:text-4xl font-black text-foreground mb-1">Ready to Share Your Expertise?</h2>
+        <p className="text-xl font-semibold text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-3">Join our selective network of technology executives and start earning by the hour</p>
+        <Button size="lg" className="bg-primary text-primary-foreground px-8 py-4 text-lg font-semibold hover:bg-primary/90 shadow-lg rounded-lg" onClick={() => openAuthDialog('signup', 'CONSULTANT')}>
           Apply Now
         </Button>
       </div>

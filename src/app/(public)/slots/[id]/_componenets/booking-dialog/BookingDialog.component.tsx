@@ -5,12 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useForm } from 'react-hook-form'
-import { useReduxSelector } from '@/hooks/redux.hook'
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import DatePickerInput from '@/components/dateInputPicker/DateInputPicker.component'
-import { Form } from '@/components/ui/form'
 import { toast } from 'sonner'
 import { useCreateBookingMutation, BookingPayload } from '@/redux/services/consultant.api'
 import { BookingSchema } from './Booking.schema'
@@ -22,18 +21,12 @@ type BookingDialogProps = {
   consultant: any
   events: any[]
   source: { fromCalendar: boolean }
-  onDateChange?: (date: string) => void
 }
 
-export default function BookingDialog({ showBookingForm, setShowBookingForm, selectedSlot, consultant, events, source = { fromCalendar: true }, onDateChange }: BookingDialogProps) {
+export default function BookingDialog({ showBookingForm, setShowBookingForm, selectedSlot, consultant, events, source = { fromCalendar: true } }: BookingDialogProps) {
   const today = moment().format('YYYY-MM-DD')
 
-  const formatSlotLabel = (start: string, end: string) => {
-    console.log({ start, end })
-    return `${moment(start).utc().format('HH:mm')} - ${moment(end).utc().format('HH:mm')}`
-  }
-
-  const [selectedDate, setSelectedDate] = useState(selectedSlot?.date || today)
+  const formatSlotLabel = (start: string, end: string) => `${moment(start).utc().format('HH:mm')} - ${moment(end).utc().format('HH:mm')}`
 
   const form = useForm<BookingSchema>({
     defaultValues: {
@@ -43,10 +36,24 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
     },
   })
 
+  const [selectedDate, setSelectedDate] = useState(selectedSlot?.date || today)
   const [createBooking, { isLoading }] = useCreateBookingMutation()
 
+  // Mirror date value from form into local state and clear selected time only when date actually changes
+  const dateValue = form.watch('date')
   useEffect(() => {
-    // If opening from calendar → keep prefilled date/time
+    if (dateValue) {
+      const d = moment(dateValue).format('YYYY-MM-DD')
+      if (d !== selectedDate) {
+        setSelectedDate(d)
+        form.setValue('time', '')
+      }
+    } else {
+      setSelectedDate(undefined)
+    }
+  }, [dateValue, selectedDate])
+
+  useEffect(() => {
     if (source?.fromCalendar) {
       form.reset({
         date: selectedSlot?.date ? moment(selectedSlot.date).toDate() : moment().toDate(),
@@ -54,46 +61,27 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
         notes: '',
       })
       setSelectedDate(selectedSlot?.date || today)
-    }
-
-    // If opening in editable mode → reset clean
-    else {
+    } else {
       form.reset({
-        date: undefined,
+        date: moment().toDate(),
         time: '',
         notes: '',
       })
-      setSelectedDate(undefined)
+      setSelectedDate(today)
     }
-  }, [selectedSlot, source?.fromCalendar])
+  }, [selectedSlot, source?.fromCalendar, showBookingForm])
 
-  useEffect(() => {
-    const subscription = form.watch((values) => {
-      if (values.date) {
-        const formattedDate = moment(values.date).format('YYYY-MM-DD')
-        setSelectedDate(formattedDate)
-        if (source?.fromCalendar === false && onDateChange) {
-          onDateChange(formattedDate)
-        }
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [form, onDateChange, source])
-
+  /** Available events filtered by the selected date */
   const availableTimes = useMemo(() => {
     if (!selectedDate) return []
-
     return events
       .filter((e) => e.type === 'available' && moment(e.start).format('YYYY-MM-DD') === selectedDate)
-      .map((e) => {
-        console.log(e)
-        return {
-          slotId: e.id,
-          label: formatSlotLabel(e.start, e.end),
-          start: e.start,
-          end: e.end,
-        }
-      })
+      .map((e) => ({
+        slotId: e.id,
+        label: formatSlotLabel(e.start, e.end),
+        start: e.start,
+        end: e.end,
+      }))
   }, [events, selectedDate])
 
   const onSubmit = async (values: any) => {
@@ -106,22 +94,21 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
     const payload: BookingPayload = {
       consultantId: consultant.id,
       bookingDate: moment().format('YYYY-MM-DD'),
-      scheduleDate: moment(selectedDate).format('YYYY-MM-DD'),
-      startTime: moment(chosenSlot.start).utc().format('HH:mm'),
-      endTime: moment(chosenSlot.end).utc().format('HH:mm'),
-
+      scheduleDate: moment(chosenSlot.start).format('YYYY-MM-DD'),
+      startTime: moment(chosenSlot.start).format('HH:mm'),
+      endTime: moment(chosenSlot.end).format('HH:mm'),
       notes: values.notes || '',
     }
-    console.log('payload', payload)
+
     try {
       const res = await createBooking(payload).unwrap()
       setShowBookingForm(false)
       console.log('Booking Response:', res)
     } catch (err: any) {
       console.log('Booking failed', err)
+      toast.error('Booking failed, please try again.')
     }
   }
-  console.log({ availableTimes: availableTimes })
 
   return (
     <Dialog
@@ -129,11 +116,7 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
       onOpenChange={(open) => {
         setShowBookingForm(open)
         if (!open) {
-          form.reset({
-            date: undefined,
-            time: '',
-            notes: '',
-          })
+          form.reset({ date: undefined, time: '', notes: '' })
           setSelectedDate(undefined)
         }
       }}
@@ -144,27 +127,41 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">
+            {/* Date input untouched */}
             <DatePickerInput form={form} name="date" label="Select Schedule Date" format="YYYY-MM-DD" disablePast placeholder="Pick a date" readOnly={source?.fromCalendar || false} />
 
-            <div>
-              <Label>Select Time</Label>
-              <Select onValueChange={(val) => form.setValue('time', val)} value={form.watch('time')}>
-                <SelectTrigger className="w-full mt-1">
-                  <SelectValue placeholder="Select Time Slot" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTimes.length > 0 ? (
-                    availableTimes.map((slot) => (
-                      <SelectItem key={slot.slotId} value={slot.label}>
-                        {slot.label}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">{selectedDate ? 'No available times for this date' : 'Select a date first'}</div>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Time Select inside FormField for validation */}
+            <FormField
+              control={form.control}
+              name="time"
+              rules={{ required: 'Please select a time slot' }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Select Time <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="w-full mt-1">
+                        <SelectValue placeholder="Select Time Slot" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-muted/50 scrollbar-track-transparent">
+                        {availableTimes.length > 0 ? (
+                          availableTimes.map((slot) => (
+                            <SelectItem key={`${slot.slotId}-${slot.start}`} value={slot.label}>
+                              {slot.label}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <div className="px-3 py-2 text-sm text-muted-foreground">No available times</div>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div>
               <Label>Notes (optional)</Label>

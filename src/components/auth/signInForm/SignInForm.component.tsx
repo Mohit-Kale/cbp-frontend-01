@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,6 +22,7 @@ export default function SignInForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const { closeAuthDialog } = useAuthDialog()
   const dispatch = useReduxDispatch()
   const [login] = useLoginMutation()
@@ -41,48 +42,48 @@ export default function SignInForm() {
   const onSubmit = async (data: SignInFormData) => {
     setIsLoading(true)
     try {
-      // const payload = { ...data, role: authRole }
-
       const response = await login(data).unwrap()
       if (!response.token) {
         toast.error('Invalid response from server.')
         return
       }
+
       const token = getCookie('accessToken')
-      // Check response is defined
-      if (response && response.token) {
-        if (token) {
-          setUser({ token: token })
-        } else {
-          setUser({ token: response.token })
-        }
-        // Check roles safely
-        const roles = response.user.roles || []
+      if (token) {
+        setUser({ token })
+      } else {
+        setUser({ token: response.token })
+      }
+
+      const roles = response.user.roles || []
+      const isUser = roles.some((r: any) => r.name === 'user')
+
+      // 🛑 Prevent redirect if logged-in user comes from `/slots/:id`
+      const isSlotsPage = pathname.startsWith('/slots/')
+      const userShouldStay = isUser && isSlotsPage
+
+      dispatch(handleLogin({ token: response.token }))
+      dispatch(updateUser(response.user))
+
+      if (response.status === 'PENDING_VERIFICATION') {
+        toast.info('Please verify your email first!')
+      }
+
+      // 🟢 AUTO-REDIRECT ONLY if userShouldStay === false
+      if (!userShouldStay) {
         if (roles.find((r: any) => r.name === 'consultant')) {
           router.push(paths.consultantDashboard())
         } else if (roles.find((r: any) => r.name === 'admin')) {
           router.push(paths.adminDashboard())
-        } else if (roles.find((r: any) => r.name === 'user')) {
+        } else if (isUser) {
           router.push(paths.userDashboard())
         } else {
           router.push(paths.home())
         }
-        dispatch(handleLogin({ token: response.token }))
-        dispatch(updateUser(response.user)) // keeps userSlice updated
-
-        // Optional: handle status
-        if (response.status === 'PENDING_VERIFICATION') {
-          toast.info('Please verify your email first!')
-        } else {
-          // toast.success('Successfully signed in!')
-        }
-
-        closeAuthDialog()
-        router.refresh()
-      } else {
-        // Fallback if response structure is wrong
-        // toast.error('Invalid response from server.')
       }
+
+      closeAuthDialog()
+      router.refresh()
     } catch (error: any) {
       // const message = error?.data?.message || 'Invalid email or password'
       // toast.error(message)

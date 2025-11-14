@@ -7,6 +7,7 @@ import { Calendar, MapPin } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 
 interface SlotsComponentProps {
   id: string
@@ -14,7 +15,7 @@ interface SlotsComponentProps {
 }
 
 export default function SlotsComponent({ id, onClickBooking }: SlotsComponentProps) {
-  const { isLoggedIn } = useReduxSelector((state) => state.user)
+  const { isLoggedIn, userProfile } = useReduxSelector((state) => state.user)
   const { openAuthDialog } = useAuthDialog()
 
   const { data: consultantsData, isLoading } = useConsultantsQuery({ page: 1, limit: 50 })
@@ -32,9 +33,12 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
   const currencySymbol = consultant.currency?.symbol || currencies?.find((c) => c.id === currencyId)?.symbol || ''
 
   const hourlyRate = parsedRate ? `${currencySymbol}${parsedRate}/hr` : null
-
   const city = consultant.profile?.city ?? ''
   const state = consultant.profile?.state ?? ''
+
+  // Get user role at top-level
+  const userRole = userProfile?.role
+
   return (
     <div className="bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
@@ -92,24 +96,22 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
           <div className="lg:col-span-1">
             <Card className="p-6 sticky top-20 shadow-sm border border-border">
               <Button
-                className="w-full mb-3 flex items-center justify-center"
+                className="w-full mb-3 flex items-center justify-center mb-0"
                 onClick={() => {
-                  if (!isLoggedIn) return openAuthDialog('signin')
-                  else onClickBooking()
+                  if (!isLoggedIn) {
+                    return openAuthDialog('signin')
+                  }
+
+                  if (userRole !== 'user') {
+                    toast.error('Only users can book sessions.')
+                    return
+                  }
+
+                  onClickBooking()
                 }}
               >
                 <Calendar className="w-4 h-4 mr-2" /> Book Session
               </Button>
-
-              {/* <Button
-                variant="outline"
-                className="w-full flex items-center justify-center hover:bg-primary/10 hover:text-primary"
-                onClick={() => {
-                  if (!isLoggedIn) return openAuthDialog('signin')
-                }}
-              >
-                <Users className="w-4 h-4 mr-2" /> Message Expert
-              </Button> */}
             </Card>
           </div>
         </div>

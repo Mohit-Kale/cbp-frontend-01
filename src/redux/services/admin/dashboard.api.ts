@@ -7,12 +7,20 @@ export const extendedApi = api.injectEndpoints({
         url: '/dashboard/recent-users',
         method: 'GET',
       }),
+      providesTags: [
+        { type: 'User', id: 'LIST' },
+        { type: 'AdminUsers', id: 'LIST' },
+      ],
     }),
     getUserCount: builder.query<any, void>({
       query: () => ({
         url: '/dashboard/user-counts',
         method: 'GET',
       }),
+      providesTags: [
+        { type: 'User', id: 'LIST' },
+        { type: 'AdminUsers', id: 'LIST' },
+      ],
     }),
   }),
 })

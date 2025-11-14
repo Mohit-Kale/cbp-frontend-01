@@ -32,23 +32,23 @@ export function TechnologyExpertiseSection() {
     <section className="py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-4">Technology Expertise Areas</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">Specialized knowledge from executives who&apos;ve scaled technology companies across all sectors</p>
+          <h2 className="text-3xl md:text-4xl font-black text-foreground mb-1">Technology Expertise Areas</h2>
+          <p className="text-xl font-semibold text-muted-foreground max-w-4xl mx-auto leading-relaxed">Specialized knowledge from executives who&apos;ve scaled technology companies across all sectors</p>
         </div>
 
         <motion.div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6" variants={containerVariants} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
           {areas.map((area) => (
             <motion.div key={area.title} variants={fadeUpVariant} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
               <Card className="h-full flex flex-col bg-card border border-border rounded-lg hover:shadow-lg transition-shadow">
-                <CardHeader className="p-6 pb-2">
-                  <motion.div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4" variants={popVariant} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
+                
+                <CardContent className="p-4 flex-1">
+                  
+                  <motion.div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-2" variants={popVariant} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
                     <span className="text-primary text-2xl">{area.icon}</span>
                   </motion.div>
-                  <h3 className="text-lg font-semibold">{area.title}</h3>
-                </CardHeader>
+                  <h3 className="text-xl font-bold mb-2">{area.title}</h3>
 
-                <CardContent className="p-4 pt-0 flex-1">
-                  <p className="text-muted-foreground text-sm leading-relaxed">{area.description}</p>
+                  <p className="text-md font-semibold text-muted-foreground">{area.description}</p>
                 </CardContent>
               </Card>
             </motion.div>

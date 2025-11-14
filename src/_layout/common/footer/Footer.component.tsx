@@ -20,7 +20,7 @@ const Footer = () => {
   // Moved inside component to safely access openAuthDialog
   const footerLinks = {
     platformLinks: [
-      { name: 'Find Experts', path: paths.findExperts(), triggerAuth: true },
+      { name: 'Find Experts', path: paths.findExperts() },
       { name: 'How it Works', path: paths.howItWorks() },
       { name: 'Pricing', path: paths.pricing() },
     ],
@@ -36,9 +36,9 @@ const Footer = () => {
       { name: 'Success Stories', path: '' },
     ],
     companyLinks: [
-      { name: 'About', path: paths.about() },
-      { name: 'Contact', path: paths.contact() },
-      { name: 'Privacy', path: paths.privacy() },
+      { name: 'About', path: '#' },
+      { name: 'Contact', path: '#' },
+      { name: 'Privacy', path: '#' },
     ],
   }
 
@@ -61,15 +61,9 @@ const Footer = () => {
             <ul className="space-y-2 text-muted-foreground">
               {footerLinks.platformLinks.map((item, index) => (
                 <li key={index}>
-                  {item.triggerAuth ? (
-                    <Link href={item.path} onClick={handleFindExpertsClick} className="hover:text-foreground cursor-pointer">
-                      {item.name}
-                    </Link>
-                  ) : (
-                    <Link href={item.path} className="hover:text-foreground">
-                      {item.name}
-                    </Link>
-                  )}
+                  <Link href={item.path} className="hover:text-foreground">
+                    {item.name}
+                  </Link>
                 </li>
               ))}
             </ul>

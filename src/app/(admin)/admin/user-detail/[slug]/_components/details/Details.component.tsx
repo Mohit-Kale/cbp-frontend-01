@@ -25,13 +25,13 @@ export default function AdminUserDetails({ data }: Props) {
   const fields = [
     { label: 'Email', value: data?.email },
     { label: 'Phone', value: data?.phone },
-    { label: 'Stripe Account Status', value: data?.profile?.stripeAccountStatus === 'VERIFIED' ? 'Configured' : 'Not Configured' },
+    !isOnlyUserRole ? { label: 'Stripe Account Status', value: data?.profile?.stripeAccountStatus === 'VERIFIED' ? 'Configured' : 'Not Configured' } : null,
 
     { label: 'Street', value: data?.profile?.street },
     { label: 'City', value: data?.profile?.city },
     { label: 'State', value: data?.profile?.state },
     { label: 'Zip Code', value: data?.profile?.zipcode },
-  ]
+  ].filter(Boolean)
 
   type TUserStatus = 'ACTIVE' | 'INACTIVE'
 
@@ -50,7 +50,7 @@ export default function AdminUserDetails({ data }: Props) {
       console.error('Failed to update activation', err)
     }
   }
-
+  console.log(data.status)
   return (
     <div className="space-y-8">
       {/* ================= Profile Overview ================= */}
@@ -89,29 +89,32 @@ export default function AdminUserDetails({ data }: Props) {
                 </div>
 
                 {/* Activation toggle (keep this for all roles) */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button onClick={() => handleActivation(data.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')} disabled={isLoading} className="flex items-center gap-2">
-                      <span className={cn('text-sm font-medium', data.status === 'ACTIVE' ? 'text-primary' : 'text-gray-400')}>Active</span>
-                      <div className={cn('relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors', data.status === 'ACTIVE' ? 'bg-primary border-primary' : 'bg-gray-200 border-gray-300')}>
-                        <span className={cn('inline-flex h-5 w-5 items-center justify-center transform rounded-full bg-white transition-transform shadow-sm', data.status === 'ACTIVE' ? 'translate-x-5' : 'translate-x-0')}>
-                          {data.status === 'ACTIVE' && <CheckCircle2 className="h-3 w-3 text-primary" />}
-                        </span>
-                      </div>
-                      <span className={cn('text-sm font-medium', data.status === 'INACTIVE' ? 'text-gray-600' : 'text-gray-400')}>Inactive</span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Click to {data.status === 'ACTIVE' ? 'deactivate' : 'activate'} user</p>
-                  </TooltipContent>
-                </Tooltip>
+                {!isOnlyUserRole && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button onClick={() => handleActivation(data.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')} disabled={isLoading || data.status === 'PENDING_VERIFICATION'} className="flex items-center gap-2">
+                        <span className={cn('text-sm font-medium', data.status === 'ACTIVE' ? 'text-primary' : 'text-gray-400')}>Active</span>
+                        <div className={cn('relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors', data.status === 'ACTIVE' ? 'bg-primary border-primary' : 'bg-gray-200 border-gray-300')}>
+                          <span className={cn('inline-flex h-5 w-5 items-center justify-center transform rounded-full bg-white transition-transform shadow-sm', data.status === 'ACTIVE' ? 'translate-x-5' : 'translate-x-0')}>
+                            {data.status === 'ACTIVE' && <CheckCircle2 className="h-3 w-3 text-primary" />}
+                          </span>
+                        </div>
+                        <span className={cn('text-sm font-medium', data.status === 'INACTIVE' ? 'text-gray-600' : 'text-gray-400')}>Inactive</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {data.status === 'PENDING_VERIFICATION' && <p>Cannot activate user until verification is completed</p>}
+                      <p>Click to {data.status === 'ACTIVE' ? 'deactivate' : 'activate'} user</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 text-sm">
                 {fields.map((field) => (
-                  <div key={field.label} className="flex flex-col">
-                    <span className="text-muted-foreground">{field.label}</span>
-                    <span className="font-medium text-foreground break-words">{field.value || '—'}</span>
+                  <div key={field?.label} className="flex flex-col">
+                    <span className="text-muted-foreground">{field?.label}</span>
+                    <span className="font-medium text-foreground break-words">{field?.value || '—'}</span>
                   </div>
                 ))}
               </div>

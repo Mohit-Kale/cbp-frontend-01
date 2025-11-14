@@ -26,7 +26,7 @@ export function PricingFAQ() {
   return (
     <section className="py-20">
       <div className="container mx-auto px-4 max-w-3xl">
-        <motion.h2 className="mb-16 text-center text-3xl font-bold text-foreground" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <motion.h2 className="mb-12 text-center text-3xl font-bold text-foreground md:text-4xl font-black" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           Pricing FAQ
         </motion.h2>
         <div className="space-y-8">

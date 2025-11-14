@@ -97,7 +97,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/find-experts" className="bg-primary text-primary-foreground px-8 py-4 rounded-lg text-lg font-semibold hover:bg-primary/90 shadow-lg text-center">
-                Find an Expert
+                Find Expert
               </Link>
               <Link href="/for-experts" className="border border-border bg-background text-foreground px-8 py-4 rounded-lg text-lg font-semibold hover:bg-primary/10 text-center">
                 Become an Expert

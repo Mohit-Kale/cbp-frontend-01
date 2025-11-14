@@ -47,10 +47,7 @@ export default function useConsultantSchedulesColumns({ onEdit, onView }: UseCol
           return displayed + more
         },
       },
-      {
-        accessorKey: 'freq',
-        header: 'Frequency',
-      },
+
       // ✅ Actions Column: Edit + View
       {
         id: 'actions',

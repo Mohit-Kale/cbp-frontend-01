@@ -27,10 +27,16 @@ export function ExpertSuccessStories() {
   return (
     <section className="py-20 bg-muted/50">
       <div className="container mx-auto px-4 text-center mb-16">
-        <motion.h2 className="text-3xl font-bold text-foreground mb-4" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <motion.h2 className="text-3xl md:text-4xl font-black text-foreground mb-1" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           Expert Success Stories
         </motion.h2>
-        <motion.p className="text-muted-foreground" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
+        <motion.p
+          className="text-xl font-semibold text-muted-foreground max-w-3xl mx-auto leading-relaxeds"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+        >
           Hear from executives who are already making an impact on our platform
         </motion.p>
       </div>

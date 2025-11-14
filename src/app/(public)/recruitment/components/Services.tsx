@@ -29,7 +29,7 @@ export function Services() {
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4 max-w-6xl">
-        <motion.h2 className="text-4xl lg:text-5xl font-bold text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <motion.h2 className="text-3xl md:text-4xl font-black text-foreground mb-12 text-center" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           Our Services
         </motion.h2>
 

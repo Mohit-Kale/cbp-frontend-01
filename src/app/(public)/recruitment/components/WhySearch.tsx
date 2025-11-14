@@ -24,7 +24,7 @@ export function WhySearch() {
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4 max-w-6xl">
-        <motion.h2 className="text-4xl lg:text-5xl font-bold text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <motion.h2 className="text-3xl md:text-4xl font-black text-foreground mb-12 text-center" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           Why Boardtide Search
         </motion.h2>
 
@@ -33,8 +33,8 @@ export function WhySearch() {
             <motion.div key={i} variants={popVariant} initial="hidden" whileInView="show" viewport={{ once: true }} transition={{ delay: i * 0.1 }} whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.12)' }}>
               <Card className={`border-2 ${i === 3 ? 'bg-primary/5' : ''}`}>
                 <CardHeader>
-                  <CardTitle className="text-2xl flex items-start gap-3">
-                    <Icon className="w-8 h-8 text-primary flex-shrink-0 mt-1" />
+                  <CardTitle className="text-xl flex items-start gap-3">
+                    <Icon className="w-8 h-8 text-primary flex-shrink-0" />
                     {title}
                   </CardTitle>
                 </CardHeader>
