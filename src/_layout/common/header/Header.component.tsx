@@ -146,7 +146,7 @@ const Header = () => {
           )}
 
           {/* Mobile Toggle */}
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <Button variant="ghost" size="icon" className="md:hidden hover:text-primary hover:bg-primary/10" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>

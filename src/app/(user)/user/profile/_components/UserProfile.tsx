@@ -76,21 +76,21 @@ export default function UserProfileForm() {
                     <RenderField control={form.control} name="phone" label="Phone Number" placeholder="Enter phone number" required />
                   </div>
                 </section>
-              </div>
-              <section className="space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-border">
-                  <div className="h-10 w-1 bg-primary rounded-full" />
-                  <div>
-                    <h3 className="text-2xl font-semibold text-foreground">Address</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Your current location details</p>
+                <section className="space-y-6">
+                  <div className="flex items-center gap-3 pb-4 border-b border-border">
+                    <div className="h-10 w-1 bg-primary rounded-full" />
+                    <div>
+                      <h3 className="text-2xl font-semibold text-foreground">Address</h3>
+                      <p className="text-sm text-muted-foreground mt-1">Your current location details</p>
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {(['street', 'city', 'state', 'zipcode'] as const).map((field) => (
-                    <RenderField key={field} control={form.control} required name={field} label={field.charAt(0).toUpperCase() + field.slice(1)} />
-                  ))}
-                </div>
-              </section>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {(['street', 'city', 'state', 'zipcode'] as const).map((field) => (
+                      <RenderField key={field} control={form.control} required name={field} label={field.charAt(0).toUpperCase() + field.slice(1)} />
+                    ))}
+                  </div>
+                </section>
+              </div>
               {/* SUBMIT BUTTON */}
               <div className="flex justify-end gap-4">
                 <Button

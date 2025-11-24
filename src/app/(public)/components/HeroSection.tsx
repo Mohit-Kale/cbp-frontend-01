@@ -27,7 +27,7 @@ export default function HeroSection() {
           <motion.div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.div variants={popVariant}>
               <Link href="/find-experts" passHref>
-                <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg px-8 py-4 text-lg font-semibold">
+                <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg px-8 py-4 text-lg font-semibold">
                   <span>Find Expert</span>
                 </Button>
               </Link>
@@ -36,7 +36,7 @@ export default function HeroSection() {
               <Button
                 variant="outline"
                 onClick={() => openAuthDialog('signup', 'CONSULTANT')}
-                className="border-border pointer-cursor bg-background text-foreground hover:bg-primary/10 hover:text-primary px-8 py-4 text-lg font-semibold"
+                className="border-border pointer-cursor bg-background text-foreground hover:bg-primary/10 hover:text-primary px-8 py-4 text-lg font-semibold w-full"
               >
                 <span>Become an Expert</span>
               </Button>

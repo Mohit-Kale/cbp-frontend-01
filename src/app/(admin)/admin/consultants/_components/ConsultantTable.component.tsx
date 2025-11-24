@@ -1,35 +1,39 @@
 'use client'
 
 import * as React from 'react'
+import { Users } from 'lucide-react'
 
 import { DataTable } from '@/components/dataTable/DataTable.component'
-import { Users } from 'lucide-react'
-import { useAdminUsersQuery } from '@/redux/services/admin/users.api'
-import useUsersColumns from './useUsersColumns.hook'
 import { RenderComponent } from '@/components/renderComponent/RenderComponent.component'
-import { pageSize } from '@/utils'
 import TableSkeleton from '@/components/skeletons/tableView/TableSkeleton.component'
 
-// 4. Main Table Component
-// 4. Main Table Component
+import { useAdminUsersQuery } from '@/redux/services/admin/users.api'
+import useUsersColumns from './useUsersColumns.hook'
+import { useTablePagination } from '@/hooks/useTablePagination'
+import { pageSize } from '@/utils'
+
 function ConsultantTable() {
-  const [page, setPage] = React.useState(1)
+  const { page, limit, setPage } = useTablePagination(pageSize)
 
   const { data, isFetching, isError } = useAdminUsersQuery({
     page,
-    limit: pageSize,
+    limit,
   })
+
   const { columns } = useUsersColumns()
 
+  // Filter to show only consultants (users with roles other than "user")
   const filteredList = React.useMemo(() => {
-    return (
-      data?.list?.filter((user) => {
-        // If user has ANY role that isn't "user", show them
-        return user.roles?.some((r) => r.name !== 'user')
-      }) || []
-    )
+    const list = data?.list || []
+    return list.filter((user) => {
+      // If user has ANY role that isn't "user", show them
+      return user.roles?.some((r) => r.name !== 'user')
+    })
   }, [data])
-  console.log(filteredList)
+
+  // We always rely on backend for this
+  const totalPages = data?.totalPages || 1
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -38,7 +42,7 @@ function ConsultantTable() {
       </div>
 
       <RenderComponent isLoading={isFetching} isError={isError} loader={<TableSkeleton />}>
-        <DataTable columns={columns} data={filteredList} page={data?.currentPage || page} setPage={setPage} totalPages={data?.totalPages || 1} isPaginationEnabled />
+        <DataTable columns={columns} data={filteredList} page={page} setPage={setPage} totalPages={totalPages} isPaginationEnabled />
       </RenderComponent>
     </div>
   )

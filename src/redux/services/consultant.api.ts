@@ -11,6 +11,7 @@ export interface ConsultantProfile {
   state: string
   currencyId: number
   hourlyRate: string
+  stripeAccountId: string
 }
 
 export interface ConsultantDocument {
@@ -34,6 +35,7 @@ export interface Consultant {
   phone: string
   status: string
   isVerified: boolean
+  averageRating: number
   roles: ConsultantRole[]
   profile?: ConsultantProfile | null
   consultantDocuments?: ConsultantDocument[]
@@ -107,6 +109,7 @@ export interface BookingResponse {
   notes?: string
   createdAt: string
   updatedAt: string
+  clientSecret: string
   client: Record<string, any>
   provider: Record<string, any>
   service: Record<string, any>
@@ -124,6 +127,7 @@ export interface MyBooking {
   scheduleDate: string
   createdAt: string
   updatedAt: string
+  meetingLink?: string
   customer?: {
     id: number
     fullName: string
@@ -181,7 +185,6 @@ export const extendedApi = api.injectEndpoints({
         const params = new URLSearchParams()
         params.set('page', page.toString())
         params.set('limit', limit.toString())
-        if (status) params.set('status', status)
 
         const url = `/booking/bookings?${params.toString()}`
         console.log('🌐 Show My Bookings API URL:', url)
@@ -201,6 +204,22 @@ export const extendedApi = api.injectEndpoints({
         body: payload,
       }),
       invalidatesTags: ['Consultants'], // optional: refresh bookings cache
+    }),
+    createMeetingAndStatus: builder.mutation<MyBooking, { bookingId: number | undefined; meetingLink?: string; status?: string }>({
+      query: ({ bookingId, meetingLink, status }) => {
+        const body: Record<string, any> = {}
+
+        // Only one of these will be added
+        if (meetingLink) body.meetingLink = meetingLink
+        if (status) body.status = status
+
+        return {
+          url: `/consultant/booking/${bookingId}`,
+          method: 'PATCH',
+          body,
+        }
+      },
+      invalidatesTags: ['Consultants'],
     }),
     // ✅ Fetch all specialties
     specialists: builder.query<Speciality[], void>({
@@ -234,11 +253,11 @@ export const extendedApi = api.injectEndpoints({
       invalidatesTags: ['Consultants'],
     }),
     // ✅ Get availability for a consultant between date range
-    consultantAvailability: builder.query<ConsultantAvailabilityResponse, { id: number; startDate: string; endDate: string }>({
-      query: ({ id, startDate, endDate }) => ({
+    consultantAvailability: builder.query<ConsultantAvailabilityResponse, { id: number; startDate: string; endDate: string; timezone: string }>({
+      query: ({ id, startDate, endDate, timezone }) => ({
         url: `/consultant/schedule/${id}/availability`,
         method: 'GET',
-        params: { startDate, endDate },
+        params: { startDate, endDate, timezone },
       }),
       transformResponse: (response: { data: ConsultantAvailabilityResponse }) => response.data,
       providesTags: ['Consultants'],
@@ -281,4 +300,5 @@ export const {
   useConsultantAvailabilityQuery,
   useCreateBookingMutation,
   useShowMyBookingsQuery,
+  useCreateMeetingAndStatusMutation,
 } = extendedApi

@@ -13,6 +13,8 @@ import DatePickerInput from '@/components/dateInputPicker/DateInputPicker.compon
 import { toast } from 'sonner'
 import { useCreateBookingMutation, BookingPayload } from '@/redux/services/consultant.api'
 import { BookingSchema } from './Booking.schema'
+import { useRouter } from 'next/navigation'
+import { paths } from '@/navigate/paths'
 
 type BookingDialogProps = {
   showBookingForm: boolean
@@ -83,7 +85,8 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
         end: e.end,
       }))
   }, [events, selectedDate])
-
+  const [clientSecret, setClientSecret] = useState('')
+  const router = useRouter()
   const onSubmit = async (values: any) => {
     const chosenSlot = availableTimes.find((t) => t.label === values.time)
     if (!chosenSlot) {
@@ -102,11 +105,15 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
 
     try {
       const res = await createBooking(payload).unwrap()
+      if (res?.clientSecret) {
+        setClientSecret(res.clientSecret)
+        router.push(paths.payment(res.clientSecret, res.bookingId))
+      }
       setShowBookingForm(false)
       console.log('Booking Response:', res)
     } catch (err: any) {
       console.log('Booking failed', err)
-      toast.error('Booking failed, please try again.')
+      // toast.error('Booking failed, please try again.')
     }
   }
 
@@ -141,7 +148,7 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
                     Select Time <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={source?.fromCalendar}>
                       <SelectTrigger className="w-full mt-1">
                         <SelectValue placeholder="Select Time Slot" />
                       </SelectTrigger>

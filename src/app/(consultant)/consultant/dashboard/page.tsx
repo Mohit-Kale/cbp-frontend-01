@@ -12,9 +12,8 @@ export const generateMetadata = async () =>
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-start justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-start justify-center overflow-hidden ">
       {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10"></div>
 
       {/* Content Wrapper */}
       <div className="relative z-10 container mx-auto px-4 pt-20">

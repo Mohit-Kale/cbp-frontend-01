@@ -2,14 +2,17 @@ import React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import moment from 'moment'
 import { MyBooking } from '@/redux/services/consultant.api'
-import { Eye } from 'lucide-react'
+import { Clock, Eye, EyeClosed, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface UseBookingColumnsProps {
   onView: (row: MyBooking) => void
+  onRate: (row: MyBooking) => void
 }
 
-export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
+export default function useBookingsColumns({ onView, onRate }: UseBookingColumnsProps) {
   const columns: ColumnDef<MyBooking>[] = React.useMemo(
     () => [
       {
@@ -30,12 +33,12 @@ export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
       },
       {
         accessorKey: 'bookingDate',
-        header: 'Booking Date',
+        header: 'Booked On',
         cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
       },
       {
         accessorKey: 'scheduleDate',
-        header: 'Schedule Date',
+        header: 'Scheduled On',
         cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
       },
       {
@@ -50,27 +53,97 @@ export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
         header: 'Status',
         cell: ({ getValue }) => {
           const value = (getValue() as string) || ''
-
-          // Capitalize first letter, rest lowercase
           const formatted = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
 
-          return <Badge variant="default">{formatted}</Badge>
+          const variant = value.toLowerCase() === 'confirmed' ? 'default' : 'secondary'
+
+          return <Badge variant={variant}>{formatted}</Badge>
+        },
+      },
+      {
+        id: 'meetingLink',
+        header: 'Meeting Link',
+        accessorKey: 'meetingLink',
+
+        cell: ({ row }) => {
+          const status = row.original.status
+          const value = row.original.meetingLink
+
+          // ============================
+          // 1. NOT CONFIRMED
+          // ============================
+          if (status !== 'CONFIRMED') {
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <EyeClosed className="w-5 h-5 ml-6 text-gray-400" />
+                </TooltipTrigger>
+                <TooltipContent>This booking is not confirmed yet</TooltipContent>
+              </Tooltip>
+            )
+          }
+
+          // ============================
+          // 2. CONFIRMED BUT NO LINK
+          // ============================
+          if (status === 'CONFIRMED' && !value) {
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Clock className="w-5 h-5 ml-6 text-yellow-500" />
+                </TooltipTrigger>
+                <TooltipContent>Consultant has not added the meeting link yet</TooltipContent>
+              </Tooltip>
+            )
+          }
+
+          // ============================
+          // 3. CONFIRMED + MEETING AVAILABLE
+          // ============================
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={value || ''} target="_blank" rel="noopener noreferrer" className="flex items-center ml-6">
+                  <Eye className="w-5 h-5 text-blue-600 hover:text-blue-800 cursor-pointer" />
+                </Link>
+              </TooltipTrigger>
+
+              <TooltipContent>Click to open the meeting link</TooltipContent>
+            </Tooltip>
+          )
         },
       },
 
-      // {
-      //   id: 'actions',
-      //   header: 'Actions',
-      //   cell: ({ row }) => (
-      //     <div className="flex gap-2">
-      //       <button className="text-primary hover:underline flex items-center gap-1" onClick={() => onView(row.original)}>
-      //         <Eye className="w-5 h-5" />
-      //       </button>
-      //     </div>
-      //   ),
-      // },
+      // ✅ NEW RATING COLUMN
+      {
+        id: 'rating',
+        header: 'Rating',
+        cell: ({ row }) => {
+          const { status } = row.original
+
+          if (status === 'COMPLETED') {
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Star className="w-5 h-5 ml-6 text-yellow-400 cursor-pointer" onClick={() => onRate(row.original)} />
+                </TooltipTrigger>
+                <TooltipContent>You can rate this consultation</TooltipContent>
+              </Tooltip>
+            )
+          }
+
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-gray-400 ml-6">—</span>
+              </TooltipTrigger>
+              <TooltipContent>This booking is not completed yet</TooltipContent>
+            </Tooltip>
+          )
+        },
+      },
     ],
-    [onView],
+    [onView, onRate],
   )
 
   return { columns }

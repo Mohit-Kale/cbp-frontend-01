@@ -3,12 +3,16 @@ import { ColumnDef } from '@tanstack/react-table'
 import moment from 'moment'
 import { MyBooking } from '@/redux/services/consultant.api'
 import { Badge } from '@/components/ui/badge'
+import { ExternalLink, PlusCircle, Pencil, CheckCircle2 } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import clsx from 'clsx'
 
 interface UseBookingColumnsProps {
-  onView: (row: MyBooking) => void
+  onManageLink: (row: MyBooking, mode: 'add' | 'edit') => void
+  onMarkComplete: (row: MyBooking) => void
 }
 
-export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
+export default function useBookingsColumns({ onManageLink, onMarkComplete }: UseBookingColumnsProps) {
   const columns: ColumnDef<MyBooking>[] = React.useMemo(
     () => [
       {
@@ -22,18 +26,18 @@ export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
         header: 'Email',
       },
       {
-        accessorKey: 'customer.phone', // optional: if phone exists on customer
+        accessorKey: 'customer.phone',
         header: 'Phone',
-        cell: ({ getValue }) => getValue() || '-', // fallback if undefined
+        cell: ({ getValue }) => getValue() || '-',
       },
       {
         accessorKey: 'bookingDate',
-        header: 'Booking Date',
+        header: 'Booked on',
         cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
       },
       {
         accessorKey: 'scheduleDate',
-        header: ' Scheduled Date',
+        header: 'Scheduled on',
         cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
       },
       {
@@ -41,33 +45,76 @@ export default function useBookingsColumns({ onView }: UseBookingColumnsProps) {
         id: 'slot',
         header: 'Slot',
       },
+
       {
         id: 'status',
         accessorKey: 'status',
         header: 'Status',
         cell: ({ getValue }) => {
           const value = (getValue() as string) || ''
+          const lower = value.toLowerCase()
 
-          // Capitalize first letter, rest lowercase
           const formatted = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
 
-          return <Badge variant="default">{formatted}</Badge>
+          const variant = lower === 'confirmed' ? 'default' : lower === 'pending' ? 'secondary' : lower === 'completed' ? 'outline' : 'destructive'
+
+          return (
+            <Badge variant={variant} className={clsx({ 'bg-green-600 text-white': variant === 'outline' })}>
+              {formatted}
+            </Badge>
+          )
         },
       },
 
-      // {
-      //   id: 'actions',
-      //   header: 'Actions',
-      //   cell: ({ row }) => (
-      //     <div className="flex gap-2">
-      //       <button className="text-primary hover:underline flex items-center gap-1" onClick={() => onView(row.original)}>
-      //         <Eye className="w-5 h-5" />
-      //       </button>
-      //     </div>
-      //   ),
-      // },
+      {
+        id: 'meetingLink',
+        header: 'Meeting Link',
+        cell: ({ row }) => {
+          const b = row.original
+
+          return (
+            <div className="flex items-center gap-3 ">
+              {b.meetingLink ? (
+                <>
+                  {/* View Link */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <ExternalLink className="w-5 h-5 text-green-600 cursor-pointer hover:text-green-800" onClick={() => window.open(b.meetingLink!, '_blank')} />
+                    </TooltipTrigger>
+                    <TooltipContent>Open meeting link</TooltipContent>
+                  </Tooltip>
+
+                  {/* Edit Link */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Pencil className="w-5 h-5 text-blue-600 cursor-pointer hover:text-blue-800" onClick={() => onManageLink(b, 'edit')} />
+                    </TooltipTrigger>
+                    <TooltipContent>Edit meeting link</TooltipContent>
+                  </Tooltip>
+                </>
+              ) : (
+                // Add Link
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <PlusCircle className="w-5 h-5 text-blue-600 cursor-pointer hover:text-blue-800 ml-7" onClick={() => onManageLink(b, 'add')} />
+                  </TooltipTrigger>
+                  <TooltipContent>Add meeting link</TooltipContent>
+                </Tooltip>
+              )}
+              {b.status !== 'COMPLETED' && b.meetingLink && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <CheckCircle2 className="w-5 h-5 text-purple-600 cursor-pointer hover:text-purple-800" onClick={() => onMarkComplete(b)} />
+                  </TooltipTrigger>
+                  <TooltipContent>Mark Status as Completed</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          )
+        },
+      },
     ],
-    [onView],
+    [onManageLink, onMarkComplete],
   )
 
   return { columns }

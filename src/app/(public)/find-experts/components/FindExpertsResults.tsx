@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { FindExpertsFilters } from './FindExpertsFilters'
 import { ExpertCard } from './ExpertCard'
 import { useConsultantsQuery } from '@/redux/services/consultant.api'
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import NoRecordsFound from '@/components/noRecordsFound/NoRecordFound.component'
 import AlertError from '@/components/alert/AlertError'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import SectionLoading from '@/components/ui/section-loading'
 
 interface FindExpertResultsProps {
   filters: { name: string; skills: string[]; specialtyId: number[] }
@@ -19,28 +19,48 @@ interface FindExpertResultsProps {
 
 export function FindExpertResults({ filters, onFilterChange, forceLoading = false, onResultsLoaded }: FindExpertResultsProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const [sortOrder, setSortOrder] = useState<'lowestRate' | 'highestRate' | 'mostRecent' | ''>('')
+  const [isPageLoading, setIsPageLoading] = useState(false)
   const pageLimit = 6
 
-  // 🔍 Fetch consultants using Redux query (server-driven filters)
-  const { data, isLoading, isFetching, error } = useConsultantsQuery({
-    page: currentPage,
-    limit: pageLimit,
+  // Fetch all consultants at once
+  const { data, isLoading, error } = useConsultantsQuery({
     name: filters.name || undefined,
-    specialtyId: filters.specialtyId.length ? filters.specialtyId : undefined,
+    specialtyId: filters.specialtyId.length ? [...filters.specialtyId] : undefined,
   })
 
-  // ✅ Reset page on filter change
+  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [filters])
 
-  // ✅ Notify parent when results finish loading (for scroll sync)
+  // Notify parent when results are loaded
   useEffect(() => {
-    if (!isFetching && !isLoading && onResultsLoaded) {
+    if (!isLoading && onResultsLoaded) {
       onResultsLoaded()
     }
-  }, [isFetching, isLoading, onResultsLoaded])
+  }, [isLoading, onResultsLoaded])
+
+  // Local pagination logic
+  const totalPages = useMemo(() => {
+    return Math.ceil((data?.list.length || 0) / pageLimit)
+  }, [data, pageLimit])
+
+  const currentPageData = useMemo(() => {
+    if (!data?.list) return []
+    const start = (currentPage - 1) * pageLimit
+    const end = currentPage * pageLimit
+    return data.list.slice(start, end)
+  }, [data, currentPage, pageLimit])
+
+  // Page change handler with fake loader
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return
+    setIsPageLoading(true)
+    setCurrentPage(page)
+    setTimeout(() => {
+      setIsPageLoading(false)
+    }, 300) // fake loader duration
+  }
 
   const handleFilterChange = (newFilters: typeof filters) => {
     const filtersChanged = newFilters.name !== filters.name || newFilters.skills.join(',') !== filters.skills.join(',') || newFilters.specialtyId.join(',') !== filters.specialtyId.join(',')
@@ -50,80 +70,60 @@ export function FindExpertResults({ filters, onFilterChange, forceLoading = fals
     }
   }
 
-  const handlePageChange = (page: number) => {
-    if (page < 1 || page > (data?.totalPages || 1)) return
-    setCurrentPage(page)
-  }
-
-  const handleSortChange = (value: string) => {
-    setSortOrder(value as typeof sortOrder)
-    setCurrentPage(1)
-  }
-
-  const totalPages = data?.totalPages || 1
-  const hasResults = data?.list && data.list.length > 0
   const loading = isLoading || forceLoading
+  const hasResults = data?.list && data.list.length > 0
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid lg:grid-cols-4 gap-6">
-        {/* 🧭 Sidebar Filters */}
+        {/* Sidebar Filters */}
         <FindExpertsFilters filters={filters} onFilterChange={handleFilterChange} />
 
-        {/* 🔎 Results Section */}
+        {/* Results Section */}
         <div className="lg:col-span-3">
           {/* Header */}
           <div className="flex items-center justify-between mb-3 mt-3">
-            <div className="text-md text-muted-foreground">
-              {loading ? (
-                'Loading experts...'
-              ) : (
+            <div className="text-md text-primary">
+              {!loading && (
                 <>
-                  Showing {data?.list.length || 0} of {data?.totalItems || 0} experts
-                  {currentPage > 1 && ` • Page ${currentPage} of ${totalPages}`}
+                  Showing {currentPageData.length} of {data?.list.length || 0} experts
                 </>
               )}
             </div>
-            {/* <Select onValueChange={handleSortChange} value={sortOrder}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by relevance" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="lowestRate">Lowest rate first</SelectItem>
-                <SelectItem value="highestRate">Highest rate first</SelectItem>
-                <SelectItem value="mostRecent">Most recent</SelectItem>
-              </SelectContent>
-            </Select> */}
           </div>
-
-          {/* Loader */}
+          {/* Loading */}
           {loading && (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <SectionLoading />
             </div>
           )}
 
-          {/* Error State */}
+          {/* Error */}
           {error && <AlertError title="Failed to load experts" description="Please try again later." />}
 
-          {/* No Results */}
+          {/* No results */}
           {!loading && !error && !hasResults && <NoRecordsFound />}
 
           {/* Experts Grid */}
           {!loading && hasResults && (
             <>
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {data.list.map((expert) => (
-                  <ExpertCard key={expert.id} expert={expert} />
-                ))}
-              </div>
+              {isPageLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {currentPageData.map((expert) => (
+                    <ExpertCard key={expert.id} expert={expert} />
+                  ))}
+                </div>
+              )}
 
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-8">
                   <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    Previous
+                    <ChevronLeft className="h-4 w-4 mr-1" /> Previous
                   </Button>
 
                   <div className="flex items-center gap-1">
@@ -142,14 +142,14 @@ export function FindExpertResults({ filters, onFilterChange, forceLoading = fals
                       }
 
                       return (
-                        <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page)} className="min-w-[40px]">
+                        <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page)} className="min-w-[40px] hover:text-primary">
                           {page}
                         </Button>
                       )
                     })}
                   </div>
 
-                  <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                  <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="hover:text-primary">
                     Next
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>

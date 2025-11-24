@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { generateMeta } from '@/lib/seo'
-import ConsultantTable from './_components/UsersTable.component'
+import ConsultantTable from './_components/ConsultantTable.component'
 export const generateMetadata = async () =>
   await generateMeta({
     title: 'Users',

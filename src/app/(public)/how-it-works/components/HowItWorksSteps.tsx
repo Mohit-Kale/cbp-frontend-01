@@ -38,7 +38,7 @@ const steps = [
 export function HowItWorksSteps() {
   return (
     <section className="py-16">
-      <div className="container mx-auto px-4 space-y-24">
+      <div className="container mx-auto  space-y-24">
         {steps.map((step) => (
           <div key={step.number} className={`grid lg:grid-cols-2 gap-12 items-center ${step.reverse ? 'lg:[&>*:first-child]:order-2 lg:[&>*:last-child]:order-1' : ''}`}>
             {/* Text Side */}

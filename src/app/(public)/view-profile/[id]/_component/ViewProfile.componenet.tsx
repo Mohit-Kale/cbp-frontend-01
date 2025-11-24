@@ -38,7 +38,7 @@ export default function ConsultantDetails({ id }: Props) {
   const currencySymbol = consultant.currency?.symbol || currencies?.find((c) => c.id === consultant.profile?.currencyId)?.symbol || ''
 
   const hourlyRate = consultant.profile?.hourlyRate ? `${currencySymbol}${parseFloat(consultant.profile.hourlyRate)}/hr` : null
-
+  const rating = consultant.averageRating || 0
   const resumeDoc = consultant.consultantDocuments?.find((doc) => doc.parsedData)
   const specialties = consultant.consultantSpecialties || []
 
@@ -75,6 +75,9 @@ export default function ConsultantDetails({ id }: Props) {
                 <div className="text-right">
                   <p className="text-lg font-semibold text-primary">{hourlyRate}</p>
                   <p className="text-xs text-muted-foreground">Consultation Fee</p>
+                  <div className="flex mx-6 gap-1 ">
+                    <span className="text-sm font-medium text-foreground">⭐{rating}</span>
+                  </div>
                 </div>
               )}
             </div>

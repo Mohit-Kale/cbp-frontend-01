@@ -8,7 +8,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import '@/styles/fullcalendar.css'
 import moment from 'moment'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CalendarX2, CheckCircle2, XCircle } from 'lucide-react'
 
 export type TOnBookPayload = { start: Date; end: Date; title?: string; viewType?: string }
 
@@ -81,18 +81,18 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
         eventContent={(arg) => {
           // Custom rendering in multi-month view
           if (arg.view.type === 'multiMonthMonth') {
+            console.log('arg', arg.event)
             const title = arg.event.title?.toLowerCase()
             const label = title === 'available' ? 'Slot Available' : title === 'booked' ? 'Booked' : title
-
             return {
               html: `
-        <div class="flex flex-col">
-          <div class="flex items-center border-b border-gray-600">
-            <span class="text-xs font-medium ">${label}</span>
-          </div>
-          <span class="text-xs text-gray-600 font-medium">${moment(arg.event.start).utc().format('HH:mm')}</span>
-          <span class="text-xs text-gray-600 font-medium">${moment(arg.event.end).utc().format('HH:mm')}</span>
-        </div>`,
+          <div class="flex flex-col">
+            <div class="flex items-center border-b border-gray-600">
+              <span class="text-xs font-medium ">${label}</span>
+            </div>
+            <span class="text-xs text-gray-600 font-medium">${moment(arg.event.start).utc().format('HH:mm')}</span>
+            <span class="text-xs text-gray-600 font-medium">${moment(arg.event.end).utc().format('HH:mm')}</span>
+          </div>`,
             }
           }
 
@@ -100,14 +100,15 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
           const title = arg.event.title?.toLowerCase()
           const isAvailable = title === 'available'
           const isExpired = title === 'expired'
-          const color = isAvailable ? '#16a34a' : title === 'booked' ? '#9ca3af' : '#9ca3af'
-          const Icon = isAvailable ? CheckCircle2 : XCircle
+          const isBooked = title === 'booked'
+          const color = isAvailable ? '#16a34a' : title === 'booked' ? '#9ca3af' : '#b91c1c'
+          const Icon = isAvailable ? CheckCircle2 : isBooked ? XCircle : CalendarX2
           const label = isAvailable ? 'Slot Available' : title === 'booked' ? 'Booked' : title
 
           return (
             <div className="flex items-center gap-1.5">
               <Icon className="w-4 h-4" style={{ color }} />
-              <span className={`text-[16px] font-normal hidden sm:inline ${isExpired ? 'line-through opacity-60' : ''}`} style={{ color }}>
+              <span className={`text-[16px] font-normal hidden sm:inline ${isExpired ? 'line-through ' : ''}`} style={{ color }}>
                 {label}
               </span>
             </div>
@@ -121,6 +122,13 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
               title: info.event.title,
               viewType,
             })
+          }
+          if (info.view.type === 'multiMonthMonth') {
+            const popBody = document.querySelector('.fc-popover-body') as HTMLElement
+            const popHeader = document.querySelector('.fc-popover-header') as HTMLElement
+
+            if (popBody) popBody.style.display = 'none'
+            if (popHeader) popHeader.style.display = 'none'
           }
         }}
         datesSet={(arg) => {
@@ -136,8 +144,8 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
           // Modify the default popover for multimonth
           if (arg.view.type === 'multiMonthMonth') {
             const title = arg.event.title
-            const start = moment(arg.event.start).utc().format('HH:mm')
-            const end = moment(arg.event.end).utc().format('HH:mm')
+            const start = moment(arg.event.start).format('HH:mm')
+            const end = moment(arg.event.end).format('HH:mm')
             const el = arg.el as HTMLElement
 
             // Tooltip-like popover on hover (optional)
@@ -155,6 +163,10 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-gray-400"></div>
           <span className="text-sm font-medium text-gray-600">Booked sessions</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-[#b91c1c]"></div>
+          <span className="text-sm font-medium text-[#b91c1c]">Expired sessions</span>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useConsultantsQuery, useCurrenciesQuery } from '@/redux/services/consultant.api'
 import { useReduxSelector } from '@/hooks/redux.hook'
 import { useAuthDialog } from '@/components/auth/useAuthDialog.hook'
-import { Calendar, MapPin } from 'lucide-react'
+import { Calendar, MapPin, Star } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,7 +35,7 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
   const hourlyRate = parsedRate ? `${currencySymbol}${parsedRate}/hr` : null
   const city = consultant.profile?.city ?? ''
   const state = consultant.profile?.state ?? ''
-
+  const rating = consultant.averageRating
   // Get user role at top-level
   const userRole = userProfile?.role
 
@@ -54,13 +54,19 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
                   </div>
 
                   {hourlyRate && (
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-primary">{hourlyRate}</p>
-                      <p className="text-xs text-muted-foreground">Consultation Fee</p>
+                    <div className="flex flex-col items-end text-right">
+                      {/* Fee */}
+                      <div>
+                        <p className="text-xl font-semibold text-primary leading-none">{hourlyRate}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Consultation Fee</p>
+                      </div>
+
+                      <div className="flex mx-6 gap-1">
+                        <span className="text-sm font-medium text-foreground">⭐{rating}</span>
+                      </div>
                     </div>
                   )}
                 </div>
-
                 {/* Specialties */}
                 <div className="flex flex-wrap gap-2">
                   {consultant.consultantSpecialties?.length ? (
@@ -112,6 +118,7 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
               >
                 <Calendar className="w-4 h-4 mr-2" /> Book Session
               </Button>
+              <div className="mt-3 text-md text-muted-foreground leading-relaxed">Book your consultation at a time that works best for you.</div>
             </Card>
           </div>
         </div>

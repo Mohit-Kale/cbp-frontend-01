@@ -36,6 +36,7 @@ export function ExpertCard({ expert }: { expert: Consultant }) {
   // else find by currencyId fallback
   const currencySymbol = expert.currency?.symbol || currencies?.find((c) => c.id === expert.profile?.currencyId)?.symbol || ''
   const hourlyRate = parsedRate && parsedRate > 0 ? `${currencySymbol}${parsedRate}/hr` : ''
+  const rating = expert.averageRating || 0
   const openSession = (expertId: number) => {
     router.push(paths.userConsultantsSlots(expertId))
   }
@@ -58,7 +59,7 @@ export function ExpertCard({ expert }: { expert: Consultant }) {
           {/* Rate + Rating */}
           <div className="flex flex-col items-end text-right flex-shrink-0">
             {hourlyRate ? <div className="text-sm font-bold whitespace-nowrap">{hourlyRate}</div> : <div className="text-sm text-muted-foreground italic">Rate not set</div>}
-            <div className="text-sm text-muted-foreground whitespace-nowrap">⭐ 4.9 (23)</div>
+            <div className="text-sm text-muted-foreground whitespace-nowrap">⭐ {rating} </div>
           </div>
         </div>
 

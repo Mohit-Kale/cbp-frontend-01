@@ -225,7 +225,14 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
 
                   <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,1fr))] gap-2">
                     {weekdays.map((d) => (
-                      <Button key={d} type="button" variant={field.value?.includes(d) ? 'default' : 'outline'} onClick={() => toggleWeekday(d)} disabled={isReadOnly || !isDateRangeSelected || !allowedWeekdays.includes(d)}>
+                      <Button
+                        key={d}
+                        type="button"
+                        className="hover:text-primary"
+                        variant={field.value?.includes(d) ? 'default' : 'outline'}
+                        onClick={() => toggleWeekday(d)}
+                        disabled={isReadOnly || !isDateRangeSelected || !allowedWeekdays.includes(d)}
+                      >
                         {weekdayLabels[d].slice(0, 3)}
                       </Button>
                     ))}
@@ -261,7 +268,7 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
 
                   <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,1fr))] gap-2">
                     {hours.map((h) => (
-                      <Button key={h} type="button" variant={field.value?.includes(h) ? 'default' : 'outline'} className="text-xs sm:text-sm" onClick={() => toggleHour(h)} disabled={isReadOnly}>
+                      <Button key={h} type="button" variant={field.value?.includes(h) ? 'default' : 'outline'} className="text-xs sm:text-sm hover:text-primary" onClick={() => toggleHour(h)} disabled={isReadOnly}>
                         {h.toString().padStart(2, '0')}:00
                       </Button>
                     ))}
@@ -287,6 +294,7 @@ export default function ScheduleForm({ id, defaultValues, onSaved, isReadOnly = 
                   })
                 }
                 disabled={isLoading}
+                className="hover:text-primary"
               >
                 Reset
               </Button>

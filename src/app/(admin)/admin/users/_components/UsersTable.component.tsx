@@ -1,37 +1,36 @@
 'use client'
 
 import * as React from 'react'
+import { Users } from 'lucide-react'
 
 import { DataTable } from '@/components/dataTable/DataTable.component'
-import { Users } from 'lucide-react'
-import { useAdminUsersQuery } from '@/redux/services/admin/users.api'
-import useUsersColumns from './useUsersColumns.hook'
 import { RenderComponent } from '@/components/renderComponent/RenderComponent.component'
-import { pageSize } from '@/utils'
 import TableSkeleton from '@/components/skeletons/tableView/TableSkeleton.component'
 
-// 4. Main Table Component
-// 4. Main Table Component
+import { useAdminUsersQuery } from '@/redux/services/admin/users.api'
+import useUsersColumns from './useUsersColumns.hook'
+import { useTablePagination } from '@/hooks/useTablePagination'
+import { pageSize } from '@/utils'
+
 function UsersTable() {
-  const [page, setPage] = React.useState(1)
+  const { page, limit, setPage } = useTablePagination(pageSize)
 
   const { data, isFetching, isError } = useAdminUsersQuery({
     page,
-    limit: pageSize,
+    limit,
   })
+
   const { columns } = useUsersColumns()
 
+  // Filter without breaking pagination
   const filteredList = React.useMemo(() => {
-    return (
-      data?.list?.filter((user) => {
-        // If user has ANY role that isn't "user", show them
-        return user.roles?.some((r) => r.name !== 'consultant')
-      }) || []
-    )
+    const list = data?.list || []
+    return list.filter((user) => user.roles?.some((r) => r.name !== 'consultant'))
   }, [data])
+
+  // Calculate total pages based on filtered results
   const effectiveTotalPages = Math.ceil(filteredList.length / pageSize) || 1
 
-  console.log(filteredList)
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -40,7 +39,7 @@ function UsersTable() {
       </div>
 
       <RenderComponent isLoading={isFetching} isError={isError} loader={<TableSkeleton />}>
-        <DataTable columns={columns} data={filteredList} page={data?.currentPage || page} setPage={setPage} totalPages={effectiveTotalPages} isPaginationEnabled />
+        <DataTable columns={columns} data={filteredList} page={page} setPage={setPage} totalPages={effectiveTotalPages} isPaginationEnabled />
       </RenderComponent>
     </div>
   )

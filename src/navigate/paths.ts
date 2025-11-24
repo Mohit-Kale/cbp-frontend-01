@@ -48,4 +48,6 @@ export const paths = {
   userConsultantsSlots: (id: number) => `/slots/${id}`,
   userViewProfile: (id: number) => `/view-profile/${id}`,
   userMyBookings: () => `${paths.user}/my-bookings`,
+  payment: (clientSecret: string, bookingId: string | number) => `${paths.user}/payment?clientSecret=${encodeURIComponent(clientSecret)}&bookingId=${bookingId}`,
+  paymentSuccess: () => `${paths.user}/payment/success`,
 }

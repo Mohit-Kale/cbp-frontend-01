@@ -17,8 +17,8 @@ const AuthDialog = () => {
 
           {/* 👇 Show only when role = consultant */}
           {authRole === 'CONSULTANT' && (
-            <div className="text-center text-gray-500">
-              For <span className="font-semibold capitalize">{authRole}</span>
+            <div className="text-center text-gray-600 text-xl">
+              Joining as <span className="font-semibold capitalize">{authRole.toLowerCase()}</span>
             </div>
           )}
         </DialogHeader>

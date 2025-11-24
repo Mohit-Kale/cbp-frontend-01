@@ -229,7 +229,12 @@ export default function ProfileForm() {
       if (response) {
         dispatch(updateUser(response))
         setActiveTab('payment')
-        if (data?.profile?.stripeAccountStatus === 'VERIFIED') {
+        if (data?.profile?.stripeAccountStatus === 'VERIFIED' && !data?.isVerified) {
+          // setActiveTab('static')
+          toast.error('All details are complete and currently under review. Please be patient once verified you will be able to access other features.')
+          return
+        }
+        if (data?.profile?.stripeAccountStatus === 'VERIFIED' && data?.isVerified) {
           // setActiveTab('static')
           router.push(paths.consultantDashboard())
           return

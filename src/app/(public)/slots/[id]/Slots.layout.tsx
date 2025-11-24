@@ -11,6 +11,8 @@ import BookingDialog from './_componenets/booking-dialog/BookingDialog.component
 import { toast } from 'sonner'
 import ConsultantScheduleCalendar from './_componenets/ConsultantScheduleCalendar.component'
 import { Loader2 } from 'lucide-react'
+import SectionLoading from '@/components/ui/section-loading'
+import BackToDashboard from '@/components/backToDashboard/BackToDashboard.component'
 
 export default function ConsultantSlotsLayout() {
   const { id } = useParams<{ id: string }>()
@@ -24,14 +26,16 @@ export default function ConsultantSlotsLayout() {
   const [events, setEvents] = useState<any[]>([])
 
   const [weekRange, setWeekRange] = useState({
-    startDate: moment().startOf('week').add(1, 'day').format('YYYY-MM-DD'),
-    endDate: moment().endOf('week').add(1, 'day').format('YYYY-MM-DD'),
+    startDate: moment().startOf('week').format('YYYY-MM-DD'),
+    endDate: moment().endOf('week').format('YYYY-MM-DD'),
   })
+  const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-  const { data: slotData } = useConsultantAvailabilityQuery({ id: consultantId, startDate: weekRange.startDate, endDate: weekRange.endDate }, { skip: !consultantId })
+  const { data: slotData } = useConsultantAvailabilityQuery({ id: consultantId, startDate: weekRange.startDate, endDate: weekRange.endDate, timezone: userTZ }, { skip: !consultantId })
 
   const { data, isLoading } = useConsultantsQuery({ page: 1, limit: 50 })
   const consultant = data?.list.find((c) => c.id === consultantId)
+  const stripeAccountId = consultant?.profile?.stripeAccountId
   const [bookingSource, setBookingSource] = useState<{ fromCalendar: boolean }>({ fromCalendar: true })
 
   useEffect(() => {
@@ -51,8 +55,7 @@ export default function ConsultantSlotsLayout() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-muted-foreground">
-        <Loader2 className="h-8 w-8 animate-spin mb-2" />
-        <span>Loading consultant details…</span>
+        <SectionLoading />
       </div>
     )
   }
@@ -102,6 +105,7 @@ export default function ConsultantSlotsLayout() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-4 md:py-10">
+        <BackToDashboard />
         <SlotsComponent id={consultant.id.toString()} onClickBooking={handleClickBooking} />
 
         <div className="bg-card p-4 rounded-lg">
