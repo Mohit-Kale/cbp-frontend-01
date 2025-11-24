@@ -1,5 +1,5 @@
 import ConsultantSlotsLayout from './Slots.layout'
 
-export default function UserConsultantsSlotsPage({ params }: { params: { id: string } }) {
+export default function UserConsultantsSlotsPage() {
   return <ConsultantSlotsLayout />
 }
