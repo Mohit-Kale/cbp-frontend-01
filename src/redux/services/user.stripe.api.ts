@@ -32,12 +32,14 @@ export const stripeApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['BookingRating'],
     }),
     getBookingRating: builder.query<GetRatingResponse, { bookingId: number }>({
       query: ({ bookingId }) => ({
         url: `/rating/${bookingId}`,
         method: 'GET',
       }),
+      providesTags: ['BookingRating'],
     }),
   }),
 })

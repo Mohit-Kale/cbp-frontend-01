@@ -45,7 +45,6 @@ export default function useBookingsColumns({ onManageLink, onMarkComplete }: Use
         id: 'slot',
         header: 'Slot',
       },
-
       {
         id: 'status',
         accessorKey: 'status',
@@ -53,7 +52,6 @@ export default function useBookingsColumns({ onManageLink, onMarkComplete }: Use
         cell: ({ getValue }) => {
           const value = (getValue() as string) || ''
           const lower = value.toLowerCase()
-
           const formatted = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
 
           const variant = lower === 'confirmed' ? 'default' : lower === 'pending' ? 'secondary' : lower === 'completed' ? 'outline' : 'destructive'
@@ -65,49 +63,68 @@ export default function useBookingsColumns({ onManageLink, onMarkComplete }: Use
           )
         },
       },
-
       {
         id: 'meetingLink',
         header: 'Meeting Link',
         cell: ({ row }) => {
           const b = row.original
+          const status = b.status as 'CONFIRMED' | 'COMPLETED' | string
 
           return (
-            <div className="flex items-center gap-3 ">
-              {b.meetingLink ? (
-                <>
-                  {/* View Link */}
+            <div className="flex items-center gap-3">
+              {/* COMPLETED: show disabled view */}
+              {status === 'COMPLETED' ? (
+                b.meetingLink ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <ExternalLink className="w-5 h-5 text-green-600 cursor-pointer hover:text-green-800" onClick={() => window.open(b.meetingLink!, '_blank')} />
+                      <ExternalLink className="w-5 h-5 text-gray-400 cursor-not-allowed" />
                     </TooltipTrigger>
-                    <TooltipContent>Open meeting link</TooltipContent>
+                    <TooltipContent>Meeting completed, cannot open/edit</TooltipContent>
                   </Tooltip>
-
-                  {/* Edit Link */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Pencil className="w-5 h-5 text-blue-600 cursor-pointer hover:text-blue-800" onClick={() => onManageLink(b, 'edit')} />
-                    </TooltipTrigger>
-                    <TooltipContent>Edit meeting link</TooltipContent>
-                  </Tooltip>
-                </>
+                ) : (
+                  <PlusCircle className="w-5 h-5 text-gray-400 cursor-not-allowed" />
+                )
               ) : (
-                // Add Link
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <PlusCircle className="w-5 h-5 text-blue-600 cursor-pointer hover:text-blue-800 ml-7" onClick={() => onManageLink(b, 'add')} />
-                  </TooltipTrigger>
-                  <TooltipContent>Add meeting link</TooltipContent>
-                </Tooltip>
-              )}
-              {b.status !== 'COMPLETED' && b.meetingLink && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <CheckCircle2 className="w-5 h-5 text-purple-600 cursor-pointer hover:text-purple-800" onClick={() => onMarkComplete(b)} />
-                  </TooltipTrigger>
-                  <TooltipContent>Mark Status as Completed</TooltipContent>
-                </Tooltip>
+                <>
+                  {/* CONFIRMED */}
+                  {b.meetingLink ? (
+                    <>
+                      {/* View Link */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <ExternalLink className="w-5 h-5 text-green-600 cursor-pointer hover:text-green-800" onClick={() => window.open(b.meetingLink!, '_blank')} />
+                        </TooltipTrigger>
+                        <TooltipContent>Open meeting link</TooltipContent>
+                      </Tooltip>
+
+                      {/* Edit Link */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Pencil className="w-5 h-5 text-blue-600 cursor-pointer hover:text-blue-800" onClick={() => onManageLink(b, 'edit')} />
+                        </TooltipTrigger>
+                        <TooltipContent>Edit meeting link</TooltipContent>
+                      </Tooltip>
+                    </>
+                  ) : (
+                    // Add Link
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PlusCircle className="w-5 h-5 text-blue-600 cursor-pointer hover:text-blue-800 ml-7" onClick={() => onManageLink(b, 'add')} />
+                      </TooltipTrigger>
+                      <TooltipContent>Add meeting link</TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {/* Mark Complete */}
+                  {status === 'CONFIRMED' && b.meetingLink && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <CheckCircle2 className="w-5 h-5 text-purple-600 cursor-pointer hover:text-purple-800" onClick={() => onMarkComplete(b)} />
+                      </TooltipTrigger>
+                      <TooltipContent>Mark Status as Completed</TooltipContent>
+                    </Tooltip>
+                  )}
+                </>
               )}
             </div>
           )

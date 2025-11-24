@@ -2,7 +2,7 @@ import React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import moment from 'moment'
 import { MyBooking } from '@/redux/services/consultant.api'
-import { Clock, Eye, EyeClosed, Star } from 'lucide-react'
+import { Clock, ExternalLink, Eye, EyeClosed, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -46,7 +46,6 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
         id: 'slot',
         header: 'Slot',
       },
-
       {
         id: 'status',
         accessorKey: 'status',
@@ -54,9 +53,7 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
         cell: ({ getValue }) => {
           const value = (getValue() as string) || ''
           const formatted = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
-
           const variant = value.toLowerCase() === 'confirmed' ? 'default' : 'secondary'
-
           return <Badge variant={variant}>{formatted}</Badge>
         },
       },
@@ -64,15 +61,12 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
         id: 'meetingLink',
         header: 'Meeting Link',
         accessorKey: 'meetingLink',
-
         cell: ({ row }) => {
-          const status = row.original.status
+          const status = row.original.status as 'CONFIRMED' | 'COMPLETED' | string
           const value = row.original.meetingLink
 
-          // ============================
-          // 1. NOT CONFIRMED
-          // ============================
-          if (status !== 'CONFIRMED') {
+          // NOT CONFIRMED
+          if (status !== 'CONFIRMED' && status !== 'COMPLETED') {
             return (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -83,9 +77,19 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
             )
           }
 
-          // ============================
-          // 2. CONFIRMED BUT NO LINK
-          // ============================
+          // COMPLETED
+          if (status === 'COMPLETED') {
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <EyeClosed className="w-5 h-5 ml-6 text-gray-400" />
+                </TooltipTrigger>
+                <TooltipContent>This booking is completed</TooltipContent>
+              </Tooltip>
+            )
+          }
+
+          // CONFIRMED BUT NO LINK
           if (status === 'CONFIRMED' && !value) {
             return (
               <Tooltip>
@@ -97,29 +101,24 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
             )
           }
 
-          // ============================
-          // 3. CONFIRMED + MEETING AVAILABLE
-          // ============================
+          // CONFIRMED + LINK AVAILABLE
           return (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link href={value || ''} target="_blank" rel="noopener noreferrer" className="flex items-center ml-6">
-                  <Eye className="w-5 h-5 text-blue-600 hover:text-blue-800 cursor-pointer" />
+                  <ExternalLink className="w-5 h-5 text-blue-600 hover:text-blue-800 cursor-pointer" />
                 </Link>
               </TooltipTrigger>
-
               <TooltipContent>Click to open the meeting link</TooltipContent>
             </Tooltip>
           )
         },
       },
-
-      // ✅ NEW RATING COLUMN
       {
         id: 'rating',
         header: 'Rating',
         cell: ({ row }) => {
-          const { status } = row.original
+          const status = row.original.status as 'COMPLETED' | string
 
           if (status === 'COMPLETED') {
             return (
@@ -127,19 +126,12 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
                 <TooltipTrigger asChild>
                   <Star className="w-5 h-5 ml-6 text-yellow-400 cursor-pointer" onClick={() => onRate(row.original)} />
                 </TooltipTrigger>
-                <TooltipContent>You can rate this consultation</TooltipContent>
+                <TooltipContent>Rate this consultation</TooltipContent>
               </Tooltip>
             )
           }
 
-          return (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-gray-400 ml-6">—</span>
-              </TooltipTrigger>
-              <TooltipContent>This booking is not completed yet</TooltipContent>
-            </Tooltip>
-          )
+          return <span className="text-gray-400 ml-6">—</span>
         },
       },
     ],
