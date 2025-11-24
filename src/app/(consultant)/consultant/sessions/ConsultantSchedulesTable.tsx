@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button'
 import { ConsultantSchedule, useMySchedulesQuery } from '@/redux/services/consultant.api'
 
 export default function ConsultantSchedulesTable() {
-  const [page, setPage] = useState(1)
   const { data, isFetching, isError, refetch } = useMySchedulesQuery()
 
   const [editingSchedule, setEditingSchedule] = useState<ConsultantSchedule | null>(null)
@@ -67,7 +66,7 @@ export default function ConsultantSchedulesTable() {
       {/* Table */}
       <div className="w-full overflow-x-auto">
         <RenderComponent isLoading={isFetching} isError={isError} loader={<TableSkeleton />}>
-          <DataTable columns={columns} data={data || []} page={page} setPage={setPage} totalPages={1} isPaginationEnabled={false} />
+          <DataTable columns={columns} data={data || []} isPaginationEnabled={false} />
         </RenderComponent>
       </div>
 

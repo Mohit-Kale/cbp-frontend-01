@@ -6,29 +6,49 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import NoRecordsFound from '../noRecordsFound/NoRecordFound.component'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-interface DataTableProps<TData, TValue> {
+type DataTableBaseProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  page: number
-  setPage: (page: number) => void
-  totalPages: number
   isPaginationEnabled?: boolean
 }
 
-export function DataTable<TData, TValue>({ columns, data, page, setPage, totalPages, isPaginationEnabled = true }: DataTableProps<TData, TValue>) {
+type DataTableWithPagination<TData, TValue> = DataTableBaseProps<TData, TValue> & {
+  isPaginationEnabled?: true
+  page: number
+  setPage: (page: number) => void
+  totalPages: number
+}
+
+type DataTableWithoutPagination<TData, TValue> = DataTableBaseProps<TData, TValue> & {
+  isPaginationEnabled: false
+}
+
+type DataTableProps<TData, TValue> = DataTableWithPagination<TData, TValue> | DataTableWithoutPagination<TData, TValue>
+
+export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
+  const { columns, data } = props
+  const isPaginationEnabled = props.isPaginationEnabled !== false
+  const page = isPaginationEnabled ? props.page : 1
+  const totalPages = isPaginationEnabled ? props.totalPages : 1
+  const setPage = isPaginationEnabled ? props.setPage : () => {}
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    manualPagination: true,
-    pageCount: totalPages,
-    state: {
-      pagination: {
-        pageIndex: page - 1, // TanStack uses 0-based index
-        pageSize: data.length,
-      },
-    },
+    ...(isPaginationEnabled
+      ? {
+          manualPagination: true,
+          pageCount: totalPages,
+          state: {
+            pagination: {
+              pageIndex: page - 1, // TanStack uses 0-based index
+              pageSize: data.length,
+            },
+          },
+        }
+      : {}),
   })
 
   return (
