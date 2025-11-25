@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, Star } from 'lucide-react'
 
 import { DataTable } from '@/components/dataTable/DataTable.component'
 import { RenderComponent } from '@/components/renderComponent/RenderComponent.component'
@@ -16,8 +16,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
+import { skipToken } from '@reduxjs/toolkit/query'
 
 import { useShowMyBookingsQuery, MyBooking, useCreateMeetingAndStatusMutation } from '@/redux/services/consultant.api'
+import { useGetBookingRatingQuery } from '@/redux/services/user.stripe.api'
 
 import useBookingsColumns from './useBookingSchedules'
 import { useTablePagination } from '@/hooks/useTablePagination'
@@ -46,7 +50,14 @@ export default function MyBookingsTable() {
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add')
   const [selectedBooking, setSelectedBooking] = useState<MyBooking | null>(null)
 
+  // Rating dialog state
+  const [isRatingDialogOpen, setIsRatingDialogOpen] = useState(false)
+  const [viewingRatingBooking, setViewingRatingBooking] = useState<MyBooking | null>(null)
+
   const [updateMeetingOrStatus] = useCreateMeetingAndStatusMutation()
+
+  // ========= GET RATING FOR VIEWING ========= //
+  const { data: ratingData, isLoading: isRatingLoading } = useGetBookingRatingQuery(viewingRatingBooking ? { bookingId: viewingRatingBooking.id } : skipToken)
 
   /* ===========================================
      Form Initialize
@@ -105,11 +116,25 @@ export default function MyBookingsTable() {
   }
 
   /* ===========================================
+     View Rating Handler
+  ============================================ */
+  const handleViewRating = (booking: MyBooking) => {
+    setViewingRatingBooking(booking)
+    setIsRatingDialogOpen(true)
+  }
+
+  const closeRatingDialog = () => {
+    setIsRatingDialogOpen(false)
+    setViewingRatingBooking(null)
+  }
+
+  /* ===========================================
      Inject to Columns
   ============================================ */
   const { columns } = useBookingsColumns({
     onManageLink: openLinkDialog,
     onMarkComplete: handleMarkComplete,
+    onViewRating: handleViewRating,
   })
 
   const bookings = data?.list || []
@@ -157,6 +182,50 @@ export default function MyBookingsTable() {
               </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===========================================
+          Rating Dialog (View Only)
+      ============================================ */}
+      <Dialog open={isRatingDialogOpen} onOpenChange={closeRatingDialog}>
+        <DialogTitle className="sr-only">View Rating</DialogTitle>
+
+        <DialogContent className="max-w-md w-full rounded-xl shadow-lg p-6 bg-white dark:bg-gray-900">
+          {/* Header */}
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1 text-center">Customer Rating</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">Review provided by the customer</p>
+          </div>
+
+          {/* Rating Stars */}
+          <div className="flex justify-center gap-3 mb-6">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const active = (ratingData?.rating || 0) >= star
+              return <Star key={star} className={cn('w-12 h-12 transition-all duration-300', active ? 'text-yellow-400 fill-yellow-400 scale-110' : 'text-gray-300')} />
+            })}
+          </div>
+
+          {/* Customer Feedback */}
+          <div className="flex flex-col gap-2 mb-6">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Customer Feedback</label>
+            <Textarea
+              placeholder={isRatingLoading ? 'Loading feedback...' : 'No feedback provided'}
+              value={ratingData?.note || ''}
+              disabled
+              rows={4}
+              className="resize-none border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary transition-colors duration-200"
+            />
+          </div>
+
+          {/* Close Button */}
+          <Button
+            size="lg"
+            onClick={closeRatingDialog}
+            className="w-full py-3 rounded-lg bg-primary text-white font-semibold text-lg hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:outline-none transition-all duration-200"
+          >
+            Close
+          </Button>
         </DialogContent>
       </Dialog>
     </div>

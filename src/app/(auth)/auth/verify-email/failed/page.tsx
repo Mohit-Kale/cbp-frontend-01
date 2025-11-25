@@ -1,5 +1,5 @@
 import React from 'react'
-import EmailverificationFail from '../_components/EmailverificationFail.component'
+import EmailverificationFail from '../successfull/EmailverificationFail.component'
 import { generateMeta } from '@/lib/seo'
 
 export const generateMetadata = async () =>

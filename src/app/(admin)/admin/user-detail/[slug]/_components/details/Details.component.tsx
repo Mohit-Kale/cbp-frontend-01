@@ -50,7 +50,6 @@ export default function AdminUserDetails({ data }: Props) {
       console.error('Failed to update activation', err)
     }
   }
-  console.log(data.status)
   return (
     <div className="space-y-8">
       {/* ================= Profile Overview ================= */}
@@ -103,7 +102,7 @@ export default function AdminUserDetails({ data }: Props) {
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {data.status === 'PENDING_VERIFICATION' && <p>Cannot activate user until verification is completed</p>}
+                      {data.status === 'PENDING_VERIFICATION' && <p>User cannot be activated until verification is completed.</p>}
                       <p>Click to {data.status === 'ACTIVE' ? 'deactivate' : 'activate'} user</p>
                     </TooltipContent>
                   </Tooltip>
@@ -196,6 +195,41 @@ export default function AdminUserDetails({ data }: Props) {
                 </ul>
               </section>
             )}
+          </div>
+        </div>
+      )}
+      {/* Skills Section */}
+      {data?.profile?.skills?.length > 0 && (
+        <div className="pl-6 md:pl-8">
+          <h3 className="text-lg font-semibold text-foreground mb-2">Skills</h3>
+          <div className="flex flex-wrap gap-2">
+            {data.profile.skills
+              .join(' ') // in case skills is already an array, join them into a string
+              .split('•') // split by bullet
+              .map((skill: string, idx: number) => {
+                const trimmed = skill.trim()
+                return trimmed ? (
+                  <Badge key={idx} variant="secondary" className="px-3 py-1 text-sm rounded-full">
+                    {trimmed}
+                  </Badge>
+                ) : null
+              })}
+          </div>
+        </div>
+      )}
+      {/* Skills Section */}
+      {resumeDoc?.parsedData?.projects?.length > 0 && (
+        <div className="pl-6 md:pl-8 mt-6">
+          <h3 className="text-lg font-semibold text-foreground mb-2">Projects</h3>
+          <div className="flex flex-wrap gap-2">
+            {resumeDoc.parsedData.projects.map((project: string, idx: number) => {
+              const trimmed = project.trim()
+              return trimmed ? (
+                <Badge key={idx} variant="secondary" className="px-3 py-1 text-sm rounded-full">
+                  {trimmed}
+                </Badge>
+              ) : null
+            })}
           </div>
         </div>
       )}

@@ -1,49 +1,18 @@
+import { phoneSchema } from '@/utils/phoneValidator'
 import { z } from 'zod'
 
 export const ReferenceSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
   title: z.string().trim().min(1, 'Title is required'),
   email: z.string().trim().min(1, 'Email is required').email('Invalid email'),
-  phone: z
-    .string()
-    .trim()
-    .min(10, 'Phone number must be 10 digits')
-
-    .max(10, 'Phone number is required')
-    .refine(
-      (val) => {
-        if (!val) return true // allow empty/optional
-        // Basic international phone number regex
-        const phoneRegex = /^\+?[1-9]\d{1,14}$/
-        return phoneRegex.test(val)
-      },
-      {
-        message: 'Invalid phone number format',
-      },
-    ),
+  phone: phoneSchema,
 })
 
 export const ProfileSchema = z.object({
   // Personal Information
   fullName: z.string().trim().min(1, 'Full name is required'),
   email: z.string().email().optional(),
-  phone: z
-    .string()
-    .trim()
-    .min(10, 'Phone number must be 10 digits')
-
-    .max(10, 'Phone number is required')
-    .refine(
-      (val) => {
-        if (!val) return true // allow empty/optional
-        // Basic international phone number regex
-        const phoneRegex = /^\+?[1-9]\d{1,14}$/
-        return phoneRegex.test(val)
-      },
-      {
-        message: 'Invalid phone number format',
-      },
-    ),
+  phone: phoneSchema,
   street: z.string().min(1, 'Street is required'),
   city: z.string().min(1, 'City is required'),
   state: z.string().min(1, 'State is required'),

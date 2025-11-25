@@ -1,12 +1,18 @@
-import React from 'react'
-import EmailVerificationSuccess from '../_components/EmailVerificationSuccess.component'
-import { generateMeta } from '@/lib/seo'
+import EmailVerificationSuccess from './EmailVerificationSuccess.component'
 
-export const generateMetadata = async () =>
-  await generateMeta({
-    title: 'Verify Email successfull',
-  })
+interface PageProps {
+  searchParams: {
+    role?: string
+  }
+}
 
-export default function Page() {
-  return <EmailVerificationSuccess />
+export default async function Page({ searchParams }: PageProps) {
+  // await searchParams if necessary
+  const params = await searchParams
+  const rawRole = (params?.role || '').toUpperCase()
+
+  // enforce valid roles
+  const role: 'USER' | 'CONSULTANT' = rawRole === 'CONSULTANT' ? 'CONSULTANT' : 'USER'
+
+  return <EmailVerificationSuccess role={role} />
 }

@@ -42,7 +42,7 @@ export default function UploadedResumeDisplay({ file, fileUrl, onRemove }: Props
         {pdfUrl && (
           <Button asChild type="button" variant="outline" size="sm" className="text-primary hover:text-primary border-primary/30 hover:bg-primary/10 hover:border-primary">
             <Link href={pdfUrl} target="_blank" rel="noopener noreferrer">
-              Open PDF
+              Open File
             </Link>
           </Button>
         )}

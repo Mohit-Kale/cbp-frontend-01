@@ -37,7 +37,6 @@ export default function DashboardLayout() {
   //   ],
   // }
   const { data: cardData, isLoading } = useGetUserCountQuery()
-  console.log(cardData)
   return (
     <div className="flex flex-col gap-6">
       <RenderComponent isLoading={false} isError={false} loader={<AdminDashboardSkeleton />}>

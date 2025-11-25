@@ -114,6 +114,21 @@ export interface BookingResponse {
   provider: Record<string, any>
   service: Record<string, any>
 }
+export interface Currency {
+  id: number
+  code: string
+  symbol: string
+}
+
+export type PayoutStatus = 'PENDING' | 'COMPLETED' | 'FAILED' // extend as per API
+export interface ConsultantPayout {
+  id: number
+  amount: number
+  platformFee: number
+  status: PayoutStatus
+  createdAt: string
+  currency: Currency
+}
 export interface MyBooking {
   id: number
   customerId: number
@@ -140,6 +155,7 @@ export interface MyBooking {
     email: string
     phone: string
   }
+  consultantPayout?: ConsultantPayout
 }
 
 export interface MyBookingsResponse {

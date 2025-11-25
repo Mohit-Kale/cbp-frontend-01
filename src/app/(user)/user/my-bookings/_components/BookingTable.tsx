@@ -94,49 +94,55 @@ export default function MyBookingsTable() {
 
       {/* Rating Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogTitle className="hidden">Rate Your Consultation</DialogTitle>
+        <DialogTitle className="sr-only">Rate Your Consultation</DialogTitle>
 
-        <DialogContent className="max-w-md w-full">
-          <h2 className="text-xl font-semibold">{isReadOnly ? 'Your Rating' : 'Rate Your Consultation'}</h2>
-
-          <div className="flex flex-col gap-6">
-            {/* Rating Stars */}
-            <div className="flex gap-2 justify-center">
-              {[1, 2, 3, 4, 5].map((star) => {
-                const active = hoverRating >= star || rating >= star
-
-                return (
-                  <Star
-                    key={star}
-                    onMouseEnter={() => !isReadOnly && setHoverRating(star)}
-                    onMouseLeave={() => !isReadOnly && setHoverRating(0)}
-                    onClick={() => !isReadOnly && setRating(star)}
-                    className={cn('w-10 h-10 transition-all', isReadOnly ? 'cursor-default' : 'cursor-pointer', active ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300')}
-                  />
-                )
-              })}
-            </div>
-
-            {/* Feedback */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">{isReadOnly ? 'Your Feedback' : 'Share your feedback (optional)'}</label>
-
-              <Textarea
-                placeholder={isRatingLoading ? 'Loading previous feedback...' : isReadOnly ? 'Your submitted feedback' : 'How was your consultation?'}
-                value={feedback}
-                disabled={isReadOnly}
-                onChange={(e) => !isReadOnly && setFeedback(e.target.value)}
-                rows={4}
-              />
-            </div>
-
-            {/* Submit Button - Hidden when read-only */}
-            {!isReadOnly && (
-              <Button size="lg" disabled={isSubmitting || rating === 0} onClick={handleSubmit} className="w-full">
-                {isSubmitting ? 'Submitting…' : ratingData?.rating ? 'Update Rating' : 'Submit Rating'}
-              </Button>
-            )}
+        <DialogContent className="max-w-md w-full rounded-xl shadow-lg p-6 bg-white dark:bg-gray-900">
+          {/* Header */}
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1 text-center">{isReadOnly ? 'Your Rating' : 'Rate Your Consultation'}</h2>
+            {!isReadOnly && <p className="text-sm text-gray-500 dark:text-gray-400 text-center">Share your feedback to help us improve</p>}
           </div>
+
+          {/* Rating Stars */}
+          <div className="flex justify-center gap-3 mb-6">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const active = hoverRating >= star || rating >= star
+              return (
+                <Star
+                  key={star}
+                  onMouseEnter={() => !isReadOnly && setHoverRating(star)}
+                  onMouseLeave={() => !isReadOnly && setHoverRating(0)}
+                  onClick={() => !isReadOnly && setRating(star)}
+                  className={cn('w-12 h-12 transition-all duration-300', isReadOnly ? 'cursor-default' : 'cursor-pointer', active ? 'text-yellow-400 fill-yellow-400 scale-110' : 'text-gray-300')}
+                />
+              )
+            })}
+          </div>
+
+          {/* Feedback */}
+          <div className="flex flex-col gap-2 mb-6">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{isReadOnly ? 'Your Feedback' : 'Share your feedback (optional)'}</label>
+            <Textarea
+              placeholder={isRatingLoading ? 'Loading previous feedback...' : isReadOnly ? 'Your submitted feedback' : 'How was your consultation?'}
+              value={feedback}
+              disabled={isReadOnly}
+              onChange={(e) => !isReadOnly && setFeedback(e.target.value)}
+              rows={4}
+              className="resize-none border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary transition-colors duration-200"
+            />
+          </div>
+
+          {/* Submit Button - Hidden when read-only */}
+          {!isReadOnly && (
+            <Button
+              size="lg"
+              disabled={isSubmitting || rating === 0}
+              onClick={handleSubmit}
+              className="w-full py-3 rounded-lg bg-primary text-white font-semibold text-lg hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:outline-none transition-all duration-200"
+            >
+              {isSubmitting ? 'Submitting…' : ratingData?.rating ? 'Update Rating' : 'Submit Rating'}
+            </Button>
+          )}
         </DialogContent>
       </Dialog>
     </div>

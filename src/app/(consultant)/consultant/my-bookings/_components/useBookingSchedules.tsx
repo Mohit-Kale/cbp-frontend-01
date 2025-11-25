@@ -1,18 +1,19 @@
 import React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import moment from 'moment'
-import { MyBooking } from '@/redux/services/consultant.api'
+import { ConsultantPayout, MyBooking } from '@/redux/services/consultant.api'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink, PlusCircle, Pencil, CheckCircle2 } from 'lucide-react'
+import { ExternalLink, PlusCircle, Pencil, CheckCircle2, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import clsx from 'clsx'
 
 interface UseBookingColumnsProps {
   onManageLink: (row: MyBooking, mode: 'add' | 'edit') => void
   onMarkComplete: (row: MyBooking) => void
+  onViewRating: (row: MyBooking) => void
 }
 
-export default function useBookingsColumns({ onManageLink, onMarkComplete }: UseBookingColumnsProps) {
+export default function useBookingsColumns({ onManageLink, onMarkComplete, onViewRating }: UseBookingColumnsProps) {
   const columns: ColumnDef<MyBooking>[] = React.useMemo(
     () => [
       {
@@ -26,19 +27,28 @@ export default function useBookingsColumns({ onManageLink, onMarkComplete }: Use
         header: 'Email',
       },
       {
-        accessorKey: 'customer.phone',
-        header: 'Phone',
-        cell: ({ getValue }) => getValue() || '-',
+        accessorKey: 'consultantPayout',
+        header: 'Payout',
+        cell: ({ getValue }) => {
+          const payout = getValue() as ConsultantPayout | undefined
+
+          if (!payout) return '-'
+
+          const { amount, currency } = payout
+          const symbol = currency?.symbol || '$'
+
+          return `${symbol}${amount.toLocaleString()}`
+        },
       },
       {
         accessorKey: 'bookingDate',
         header: 'Booked on',
-        cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
+        cell: ({ getValue }) => moment(getValue() as string).format('YYYY/MM/DD'),
       },
       {
         accessorKey: 'scheduleDate',
         header: 'Scheduled on',
-        cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
+        cell: ({ getValue }) => moment(getValue() as string).format('YYYY/MM/DD'),
       },
       {
         accessorFn: (row) => `${moment(row.startTime, 'HH:mm:ss').format('hh:mm A')} - ${moment(row.endTime, 'HH:mm:ss').format('hh:mm A')}`,
@@ -77,7 +87,7 @@ export default function useBookingsColumns({ onManageLink, onMarkComplete }: Use
                 b.meetingLink ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <ExternalLink className="w-5 h-5 text-gray-400 cursor-not-allowed" />
+                      <ExternalLink className="w-5 h-5 text-gray-400 cursor-not-allowed ml-7" />
                     </TooltipTrigger>
                     <TooltipContent>Meeting completed, cannot open/edit</TooltipContent>
                   </Tooltip>
@@ -130,8 +140,28 @@ export default function useBookingsColumns({ onManageLink, onMarkComplete }: Use
           )
         },
       },
+      {
+        id: 'rating',
+        header: 'Rating',
+        cell: ({ row }) => {
+          const status = row.original.status as 'COMPLETED' | string
+
+          if (status === 'COMPLETED') {
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Star className="w-5 h-5 ml-6 text-yellow-400 cursor-pointer" onClick={() => onViewRating(row.original)} />
+                </TooltipTrigger>
+                <TooltipContent>View rating</TooltipContent>
+              </Tooltip>
+            )
+          }
+
+          return <span className="text-gray-400 ml-6">—</span>
+        },
+      },
     ],
-    [onManageLink, onMarkComplete],
+    [onManageLink, onMarkComplete, onViewRating],
   )
 
   return { columns }

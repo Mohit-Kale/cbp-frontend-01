@@ -4,12 +4,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Calendar, MapPin } from 'lucide-react'
+import { Calendar, MapPin, Star } from 'lucide-react'
 import { useConsultantsQuery, useCurrenciesQuery } from '@/redux/services/consultant.api'
 import { useReduxSelector } from '@/hooks/redux.hook'
 import { useAuthDialog } from '@/components/auth/useAuthDialog.hook'
 import { useRouter } from 'next/navigation'
 import { paths } from '@/navigate/paths'
+import { Skeleton } from '@/components/ui/skeleton'
 import { randomBytes } from 'crypto'
 
 interface Props {
@@ -22,14 +23,82 @@ export default function ConsultantDetails({ id }: Props) {
   const { openAuthDialog } = useAuthDialog()
 
   const { data: consultantsData, isLoading } = useConsultantsQuery({ page: 1, limit: 50 })
-  console.log(consultantsData)
   const { data: currencies } = useCurrenciesQuery()
 
-  const consultant = consultantsData?.list.find((c) => c.id === Number(id))
-
+  // If loading → return skeleton UI
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 space-y-10">
+        <Card className="p-6 md:p-8 shadow-sm border border-border">
+          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+            <div className="flex-1 space-y-4 w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                {/* Avatar + Name */}
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-20 w-20 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-40" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+
+                {/* Hourly Rate */}
+                <div className="text-right space-y-2">
+                  <Skeleton className="h-6 w-24 ml-auto" />
+                  <Skeleton className="h-4 w-32 ml-auto" />
+                  <div className="flex justify-end gap-1">
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+
+              {/* Specialties */}
+              <div className="flex gap-2 flex-wrap">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-6 w-20 rounded-full" />
+                ))}
+              </div>
+
+              {/* Summary */}
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+
+              {/* Education */}
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-3/5" />
+              </div>
+
+              {/* Work Experience */}
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-36" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+
+              {/* Button */}
+              <div className="flex gap-4 pt-2">
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
   }
+
+  // =============== REAL UI ===============
+  const consultant = consultantsData?.list.find((c) => c.id === Number(id))
 
   if (!consultant) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Consultant not found</div>
@@ -38,6 +107,7 @@ export default function ConsultantDetails({ id }: Props) {
   const currencySymbol = consultant.currency?.symbol || currencies?.find((c) => c.id === consultant.profile?.currencyId)?.symbol || ''
 
   const hourlyRate = consultant.profile?.hourlyRate ? `${currencySymbol}${parseFloat(consultant.profile.hourlyRate)}/hr` : null
+
   const rating = consultant.averageRating || 0
   const resumeDoc = consultant.consultantDocuments?.find((doc) => doc.parsedData)
   const specialties = consultant.consultantSpecialties || []
@@ -45,11 +115,6 @@ export default function ConsultantDetails({ id }: Props) {
   const handleBookSession = () => {
     if (!isLoggedIn) return openAuthDialog('signin')
     router.push(paths.userConsultantsSlots(consultant.id))
-  }
-
-  const handleMessage = () => {
-    if (!isLoggedIn) return openAuthDialog('signin')
-    // TODO: redirect to chat once messaging feature exists
   }
 
   return (
@@ -75,8 +140,9 @@ export default function ConsultantDetails({ id }: Props) {
                 <div className="text-right">
                   <p className="text-lg font-semibold text-primary">{hourlyRate}</p>
                   <p className="text-xs text-muted-foreground">Consultation Fee</p>
-                  <div className="flex mx-6 gap-1 ">
-                    <span className="text-sm font-medium text-foreground">⭐{rating}</span>
+
+                  <div className="flex mx-6 gap-1">
+                    <span className="text-sm font-medium text-foreground">⭐ {rating}</span>
                   </div>
                 </div>
               )}
@@ -105,24 +171,26 @@ export default function ConsultantDetails({ id }: Props) {
               <>
                 {resumeDoc.parsedData.summary && (
                   <section>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Summary</h3>
-                    <p className="text-sm text-foreground">{resumeDoc.parsedData.summary}</p>
+                    <h3 className="text-lg font-semibold mb-2">Summary</h3>
+                    <p className="text-sm">{resumeDoc.parsedData.summary}</p>
                   </section>
                 )}
+
                 {resumeDoc.parsedData.education && (
                   <section>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Education</h3>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-foreground">
+                    <h3 className="text-lg font-semibold mb-2">Education</h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
                       {resumeDoc.parsedData.education.map((item, i) => (
                         <li key={i}>{item}</li>
                       ))}
                     </ul>
                   </section>
                 )}
+
                 {resumeDoc.parsedData.workExperience && (
                   <section>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Work Experience</h3>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-foreground">
+                    <h3 className="text-lg font-semibold mb-2">Work Experience</h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
                       {resumeDoc.parsedData.workExperience.map((exp, i) => (
                         <li key={i}>{exp}</li>
                       ))}
@@ -131,13 +199,10 @@ export default function ConsultantDetails({ id }: Props) {
                 )}
               </>
             )}
+
             <div className="flex gap-4 pt-2">
               <Button className="flex-1" onClick={handleBookSession}>
                 <Calendar className="w-4 h-4 mr-2" /> Book Session
-              </Button>
-
-              <Button variant="outline" className="flex-1 hover:bg-primary/10 hover:text-primary" onClick={handleMessage}>
-                Message Consultant
               </Button>
             </div>
           </div>

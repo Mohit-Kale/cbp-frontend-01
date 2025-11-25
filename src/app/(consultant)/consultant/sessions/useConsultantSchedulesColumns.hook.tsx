@@ -15,12 +15,12 @@ export default function useConsultantSchedulesColumns({ onEdit, onView }: UseCol
       {
         accessorKey: 'startDate',
         header: 'Start Date',
-        cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
+        cell: ({ getValue }) => moment(getValue() as string).format('YYYY/MM/DD'),
       },
       {
         accessorKey: 'endDate',
         header: 'End Date',
-        cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
+        cell: ({ getValue }) => moment(getValue() as string).format('YYYY/MM/DD'),
       },
       {
         accessorKey: 'availableDays',

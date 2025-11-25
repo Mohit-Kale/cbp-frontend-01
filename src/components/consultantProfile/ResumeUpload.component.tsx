@@ -59,7 +59,7 @@ export function ResumeUploadSection<T extends z.ZodTypeAny>({ form, fileInputKey
             ) : (
               <UploadedResumeDisplay key={`uploaded-${fileInputKey}`} file={uploadedFile || undefined} fileUrl={!uploadedFile ? resumeUrl : undefined} onRemove={resetDynamicState} />
             )}
-            <FormMessage />
+            {!isParsing && <FormMessage />}
           </FormItem>
         )}
       />

@@ -99,6 +99,8 @@ export default function ProfileForm() {
 
   const form = useForm<TCombinedProfile>({
     resolver: zodResolver(CombinedSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       fullName: data?.fullName ?? '',
       email: data?.email ?? '',
@@ -236,7 +238,7 @@ export default function ProfileForm() {
         }
         if (data?.profile?.stripeAccountStatus === 'VERIFIED' && data?.isVerified) {
           // setActiveTab('static')
-          router.push(paths.consultantDashboard())
+          // router.push(paths.consultantDashboard())
           return
         }
       }

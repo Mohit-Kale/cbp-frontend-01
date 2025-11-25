@@ -44,12 +44,22 @@ const UserHeader = () => {
   }, [])
 
   const getInitials = (name: string) => {
-    return name
-      ?.split(' ')
-      ?.map((n) => n[0])
-      ?.join('')
-      ?.toUpperCase()
+    if (!name) return 'U'
+
+    const parts = name.trim().split(' ').filter(Boolean)
+
+    // single name
+    if (parts.length === 1) {
+      return parts[0][0].toUpperCase()
+    }
+
+    // multiple names: first + last
+    const first = parts[0][0]
+    const last = parts[parts.length - 1][0]
+
+    return `${first}${last}`.toUpperCase().slice(0, 2)
   }
+
   const navLinks: NavLink[] = [
     { href: paths.userDashboard(), label: 'Dashboard', requiresAuth: true },
     { href: paths.userProfile(), label: 'Profile', requiresAuth: true },

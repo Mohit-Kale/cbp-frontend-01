@@ -56,11 +56,20 @@ const CustomerHeader = () => {
   }, [])
 
   const getInitials = (name: string) => {
-    return name
-      ?.split(' ')
-      ?.map((n) => n[0])
-      ?.join('')
-      ?.toUpperCase()
+    if (!name) return 'U'
+
+    const parts = name.trim().split(' ').filter(Boolean)
+
+    // single name
+    if (parts.length === 1) {
+      return parts[0][0].toUpperCase()
+    }
+
+    // multiple names: first + last
+    const first = parts[0][0]
+    const last = parts[parts.length - 1][0]
+
+    return `${first}${last}`.toUpperCase().slice(0, 2)
   }
 
   const navLinks: NavLink[] = [
@@ -87,10 +96,13 @@ const CustomerHeader = () => {
       // Recalculate states to be sure
       const resume = userData?.consultantDocuments?.find((d) => d.documentType === 'CV')?.fileUrl || ''
       const verified = userData?.isVerified ?? false
+      const paymentSetup = userData?.profile?.stripeAccountStatus ?? ''
       if (!resume) {
         toast.error('Please complete your profile before proceeding!')
-      } else if (resume && !verified) {
+      } else if (resume && !verified && paymentSetup !== 'VERIFIED') {
         toast.error('Your profile is complete and currently under review. Please complete your payment setup to avoid delays and start accepting bookings sooner.')
+      } else if (resume && !verified && paymentSetup === 'VERIFIED') {
+        toast.error('Your profile is complete and currently under review.Once your profile is verified, you will be able to access this section.')
       }
     }
   }

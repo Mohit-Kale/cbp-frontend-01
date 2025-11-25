@@ -6,6 +6,7 @@ import { Clock, ExternalLink, Eye, EyeClosed, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import clsx from 'clsx'
 
 interface UseBookingColumnsProps {
   onView: (row: MyBooking) => void
@@ -34,12 +35,12 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
       {
         accessorKey: 'bookingDate',
         header: 'Booked On',
-        cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
+        cell: ({ getValue }) => moment(getValue() as string).format('YYYY/MM/DD'),
       },
       {
         accessorKey: 'scheduleDate',
         header: 'Scheduled On',
-        cell: ({ getValue }) => moment(getValue() as string).format('DD/MM/YYYY'),
+        cell: ({ getValue }) => moment(getValue() as string).format('YYYY/MM/DD'),
       },
       {
         accessorFn: (row) => `${moment(row.startTime, 'HH:mm:ss').format('hh:mm A')} - ${moment(row.endTime, 'HH:mm:ss').format('hh:mm A')}`,
@@ -52,9 +53,16 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
         header: 'Status',
         cell: ({ getValue }) => {
           const value = (getValue() as string) || ''
+          const lower = value.toLowerCase()
           const formatted = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
-          const variant = value.toLowerCase() === 'confirmed' ? 'default' : 'secondary'
-          return <Badge variant={variant}>{formatted}</Badge>
+
+          const variant = lower === 'confirmed' ? 'default' : lower === 'pending' ? 'secondary' : lower === 'completed' ? 'outline' : 'destructive'
+
+          return (
+            <Badge variant={variant} className={clsx({ 'bg-green-600 text-white': variant === 'outline' })}>
+              {formatted}
+            </Badge>
+          )
         },
       },
       {
