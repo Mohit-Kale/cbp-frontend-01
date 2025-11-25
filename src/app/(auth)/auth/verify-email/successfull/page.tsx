@@ -6,10 +6,8 @@ interface PageProps {
   }
 }
 
-export default async function Page({ searchParams }: PageProps) {
-  // await searchParams if necessary
-  const params = await searchParams
-  const rawRole = (params?.role || '').toUpperCase()
+export default function Page({ searchParams }: PageProps) {
+  const rawRole = (searchParams?.role || '').toUpperCase()
 
   // enforce valid roles
   const role: 'USER' | 'CONSULTANT' = rawRole === 'CONSULTANT' ? 'CONSULTANT' : 'USER'
