@@ -13,6 +13,8 @@ export default function useAdminSidebar() {
     { label: 'Dashboard', path: paths.adminDashboard(), icon: 'layout-dashboard' },
     { label: 'Consultants', path: paths.adminConsultants(), icon: 'users' },
     { label: 'Users', path: paths.adminUsers(), icon: 'user' },
+    { label: 'Booking History', path: paths.adminBookingHistory(), icon: 'clock' },
+    { label: 'Enquiry', path: paths.adminEnquiry(), icon: 'message-square' },
   ]
 
   useEffect(() => {

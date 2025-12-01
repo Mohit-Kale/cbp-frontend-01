@@ -143,6 +143,10 @@ export interface MyBooking {
   createdAt: string
   updatedAt: string
   meetingLink?: string
+  rating?: {
+    rating: number
+    note: string
+  }
   customer?: {
     id: number
     fullName: string

@@ -4,6 +4,7 @@ import { useReduxDispatch, useReduxSelector } from '@/hooks/redux.hook'
 import { handleAuthDialog, TAuthMode, TRoles } from '@/redux/slices/auth.slice'
 import { RootState } from '@/redux/store'
 import { useRouter, usePathname } from 'next/navigation'
+import { toast } from 'sonner'
 
 export function useAuthDialog() {
   const dispatch = useReduxDispatch()
@@ -16,7 +17,10 @@ export function useAuthDialog() {
   // opens the auth dialog and sets mode + role
   const openAuthDialog = (mode: TAuthMode, role: TRoles = 'USER') => {
     console.log({ isLoggedIn })
-    if (isLoggedIn) return
+    if (isLoggedIn) {
+      toast.warning(`You are already logged in. Please logout to continue.`)
+      return
+    }
     dispatch(handleAuthDialog({ authDialogOpen: true, authMode: mode, authRole: role }))
   }
 

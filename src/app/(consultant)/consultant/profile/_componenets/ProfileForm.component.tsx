@@ -27,6 +27,7 @@ import { Currencies } from '@/dto/Currencies.dto'
 import { useOnBoardingMutation } from '@/redux/services/consultant.stripe.api'
 import { useRouter } from 'next/navigation'
 import { paths } from '@/navigate/paths'
+import TimezoneDropdown from './TimezoneDropdown'
 
 export default function ProfileForm() {
   const { data } = useProfileQuery()
@@ -230,7 +231,9 @@ export default function ProfileForm() {
 
       if (response) {
         dispatch(updateUser(response))
-        setActiveTab('payment')
+        if (data?.profile?.stripeAccountStatus !== 'VERIFIED' && !data?.isVerified) {
+          setActiveTab('payment')
+        }
         if (data?.profile?.stripeAccountStatus === 'VERIFIED' && !data?.isVerified) {
           // setActiveTab('static')
           toast.error('All details are complete and currently under review. Please be patient once verified you will be able to access other features.')
@@ -348,7 +351,6 @@ export default function ProfileForm() {
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3 tracking-tight">Profile Settings</h1>
             <p className="text-muted-foreground text-base sm:text-lg">Manage your personal information and preferences</p>
           </div>
-
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-8">
               <div className="bg-card border border-border rounded-none sm:rounded-xl shadow-soft overflow-hidden">
@@ -356,6 +358,7 @@ export default function ProfileForm() {
                   {/* PERSONAL INFO */}
                   <section className="space-y-6">
                     {/* Header */}
+
                     <div className="flex items-center gap-3 pb-4 border-b border-border">
                       <div className="h-8 sm:h-10 w-1 bg-primary rounded-full" />
                       <div>
@@ -371,60 +374,66 @@ export default function ProfileForm() {
                       <RenderField control={form.control} name="phone" label="Phone Number" required />
 
                       {/* Currency and Hourly Rate */}
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
-                        <FormField
-                          control={form.control}
-                          name="currencyId"
-                          render={({ field }) => (
-                            <FormItem className="w-full sm:w-40 pt-4">
-                              <FormLabel>
-                                Currency <span className="text-destructive">*</span>{' '}
-                              </FormLabel>
-                              <FormControl>
-                                <select
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
-                                  className="w-full h-10 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  <option value={0}>Currency</option>
-                                  {currencies?.map((c: Currencies) => (
-                                    <option key={c.id} value={c.id}>
-                                      {`${c.name} (${c.symbol ?? c.code})`}
-                                    </option>
-                                  ))}
-                                </select>
-                              </FormControl>
-                              <div className="min-h-[18px] text-xs text-destructive">
-                                <FormMessage />
-                              </div>
-                            </FormItem>
-                          )}
-                        />
+                      <div className="flex flex-col mt-6">
+                        {/* Row: Currency + Hourly Rate */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
+                          <FormField
+                            control={form.control}
+                            name="currencyId"
+                            render={({ field }) => (
+                              <FormItem className="w-full sm:w-40 pt-4">
+                                <FormLabel>
+                                  Currency <span className="text-destructive">*</span>{' '}
+                                </FormLabel>
+                                <FormControl>
+                                  <select
+                                    {...field}
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    className="w-full h-10 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    <option value={0}>Currency</option>
+                                    {currencies?.map((c: Currencies) => (
+                                      <option key={c.id} value={c.id}>
+                                        {`${c.name} (${c.symbol ?? c.code})`}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </FormControl>
+                                <div className="min-h-[18px] text-xs text-destructive">
+                                  <FormMessage />
+                                </div>
+                              </FormItem>
+                            )}
+                          />
 
-                        <FormField
-                          control={form.control}
-                          name="hourlyRate"
-                          render={({ field }) => (
-                            <FormItem className="w-full sm:flex-1 pt-4">
-                              <FormLabel className="pb-1">
-                                Hourly Rate <span className="text-destructive">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <input
-                                  type="number"
-                                  {...field}
-                                  value={field.value || ''}
-                                  onChange={(e) => field.onChange(e.target.value)}
-                                  placeholder="Hourly rate"
-                                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                />
-                              </FormControl>
-                              <div className="min-h-[18px] text-xs text-destructive">
-                                <FormMessage />
-                              </div>
-                            </FormItem>
-                          )}
-                        />
+                          <FormField
+                            control={form.control}
+                            name="hourlyRate"
+                            render={({ field }) => (
+                              <FormItem className="w-full sm:flex-1 pt-4">
+                                <FormLabel className="pb-1">
+                                  Hourly Rate <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <input
+                                    type="text"
+                                    {...field}
+                                    value={field.value || ''}
+                                    onChange={(e) => field.onChange(e.target.value)}
+                                    placeholder="Hourly rate"
+                                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  />
+                                </FormControl>
+                                <div className="min-h-[18px] text-xs text-destructive">
+                                  <FormMessage />
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Message BELOW both fields */}
+                        <p className="text-sm  leading-relaxed mt-0.5">A 10% convenience fee will be deducted from the booking amount.</p>
                       </div>
                     </div>
                   </section>
@@ -442,6 +451,10 @@ export default function ProfileForm() {
                       {(['street', 'city', 'state', 'zipcode'] as const).map((field) => (
                         <RenderField key={field} control={form.control} name={field} label={field.charAt(0).toUpperCase() + field.slice(1)} placeholder={field.charAt(0).toUpperCase() + field.slice(1)} />
                       ))}
+                    </div>
+                    <div className="mt-6 w-full">
+                      <FormLabel className="flex items-center gap-1 mb-2">Timezone</FormLabel>
+                      <TimezoneDropdown />
                     </div>
                   </section>
 

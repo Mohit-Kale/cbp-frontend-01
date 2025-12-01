@@ -21,12 +21,79 @@ import { signUpSchema, type SignUpFormData } from './SignUpForm.schema'
 import { paths } from '@/navigate/paths'
 import TermsConditionsDialog from './TermsCondtionsDialog'
 
-// Stable input component to prevent remounting/focus loss in PhoneInput
-const PhoneTextInput = React.memo(
-  React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function PhoneTextInput({ className, ...props }, ref) {
-    return <input ref={ref} {...props} className={`w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary ${className ?? ''}`} />
-  }),
-)
+// Locked input component - country code cannot be edited
+const LockedPhoneInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function LockedPhoneInput({ className, value, onChange, ...props }, ref) {
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
+  React.useImperativeHandle(ref, () => inputRef.current!)
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const input = e.currentTarget
+    const cursorPosition = input.selectionStart || 0
+    const textValue = String(value || '')
+
+    // Find where country code ends
+    const countryCodeMatch = textValue.match(/^\+\d+\s*/)
+    const countryCodeLength = countryCodeMatch ? countryCodeMatch[0].length : 0
+
+    // Block backspace/delete in country code area
+    if ((e.key === 'Backspace' && cursorPosition <= countryCodeLength) || (e.key === 'Delete' && cursorPosition < countryCodeLength)) {
+      e.preventDefault()
+      return
+    }
+
+    // Block deletion of selected text that includes country code
+    if ((e.key === 'Backspace' || e.key === 'Delete') && input.selectionStart !== input.selectionEnd) {
+      const selectionStart = input.selectionStart || 0
+      if (selectionStart < countryCodeLength) {
+        e.preventDefault()
+        return
+      }
+    }
+  }
+
+  const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    const input = e.currentTarget
+    const cursorPosition = input.selectionStart || 0
+    const textValue = String(value || '')
+
+    const countryCodeMatch = textValue.match(/^\+\d+\s*/)
+    const countryCodeLength = countryCodeMatch ? countryCodeMatch[0].length : 0
+
+    // Move cursor after country code if clicked inside it
+    if (cursorPosition < countryCodeLength) {
+      setTimeout(() => {
+        input.setSelectionRange(countryCodeLength, countryCodeLength)
+      }, 0)
+    }
+  }
+
+  const handleSelect = (e: React.SyntheticEvent<HTMLInputElement>) => {
+    const input = e.currentTarget
+    const textValue = String(value || '')
+
+    const countryCodeMatch = textValue.match(/^\+\d+\s*/)
+    const countryCodeLength = countryCodeMatch ? countryCodeMatch[0].length : 0
+
+    // Prevent selecting country code
+    if ((input.selectionStart || 0) < countryCodeLength) {
+      input.setSelectionRange(countryCodeLength, input.selectionEnd || countryCodeLength)
+    }
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      {...props}
+      value={value}
+      onChange={onChange}
+      onKeyDown={handleKeyDown}
+      onClick={handleClick}
+      onSelect={handleSelect}
+      className={`w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary ${className ?? ''}`}
+    />
+  )
+})
 
 // Custom PhoneInput wrapper to prevent country code deletion
 interface ProtectedPhoneInputProps {
@@ -38,30 +105,11 @@ interface ProtectedPhoneInputProps {
 const ProtectedPhoneInput = React.memo(
   React.forwardRef<any, ProtectedPhoneInputProps>(function ProtectedPhoneInput({ value, onChange, ...props }, ref) {
     const handleChange = (newValue: string | undefined) => {
-      // If the new value is empty but we had a value before, preserve the country code
-      if (!newValue && value) {
-        const countryCode = value.split(' ')[0]
-        if (countryCode && countryCode.startsWith('+')) {
-          onChange(countryCode)
-          return
-        }
-      }
-      // Prevent deletion of country code by ensuring it's always present
-      if (newValue && value) {
-        const currentCountryCode = value.split(' ')[0]
-        const newCountryCode = newValue.split(' ')[0]
-
-        // If country code was removed, restore it
-        if (currentCountryCode && currentCountryCode.startsWith('+') && (!newCountryCode || !newCountryCode.startsWith('+'))) {
-          onChange(currentCountryCode + ' ' + newValue)
-          return
-        }
-      }
-
+      // Simply pass through the value - LockedPhoneInput handles the protection
       onChange(newValue)
     }
 
-    return <PhoneInput ref={ref} {...props} value={value} onChange={handleChange} countryCallingCodeEditable={false} limitMaxLength={true} addInternationalOption={false} inputComponent={PhoneTextInput} />
+    return <PhoneInput ref={ref} {...props} value={value} onChange={handleChange} countryCallingCodeEditable={false} limitMaxLength={true} addInternationalOption={false} inputComponent={LockedPhoneInput} />
   }),
 )
 
@@ -123,7 +171,6 @@ export default function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
-      {/* ********** FULL NAME ********** */}
       {/* ********** NAME + PHONE SIDE BY SIDE ********** */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Full Name */}

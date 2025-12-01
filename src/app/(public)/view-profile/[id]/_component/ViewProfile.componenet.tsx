@@ -140,10 +140,10 @@ export default function ConsultantDetails({ id }: Props) {
                 <div className="text-right">
                   <p className="text-lg font-semibold text-primary">{hourlyRate}</p>
                   <p className="text-xs text-muted-foreground">Consultation Fee</p>
-
+                  {/* 
                   <div className="flex mx-6 gap-1">
                     <span className="text-sm font-medium text-foreground">⭐ {rating}</span>
-                  </div>
+                  </div> */}
                 </div>
               )}
             </div>

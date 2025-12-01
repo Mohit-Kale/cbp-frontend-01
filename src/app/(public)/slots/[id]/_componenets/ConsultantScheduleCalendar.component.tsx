@@ -48,8 +48,9 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
 
   return (
     <div className="bg-card sm:p-6 rounded-lg">
+      <div className="text-sm text-gray-600 mb-6"> Time Zone : {userTimeZone}</div>
       <FullCalendar
-        timeZone={userTimeZone}
+        // timeZone={userTimeZone}
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, multiMonthPlugin]}
         initialView="timeGridWeek"
@@ -90,8 +91,8 @@ export default function ConsultantScheduleCalendar({ events, onBook, onRangeChan
             <div class="flex items-center border-b border-gray-600">
               <span class="text-xs font-medium ">${label}</span>
             </div>
-            <span class="text-xs text-gray-600 font-medium">${moment(arg.event.start).utc().format('HH:mm')}</span>
-            <span class="text-xs text-gray-600 font-medium">${moment(arg.event.end).utc().format('HH:mm')}</span>
+            <span class="text-xs text-gray-600 font-medium">${moment(arg.event.start).format('HH:mm')}</span>
+            <span class="text-xs text-gray-600 font-medium">${moment(arg.event.end).format('HH:mm')}</span>
           </div>`,
             }
           }

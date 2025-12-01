@@ -32,13 +32,11 @@ const Footer = () => {
           openAuthDialog('signup', 'CONSULTANT')
         },
       },
-      { name: 'Expert Resources', path: '' },
-      { name: 'Success Stories', path: '' },
     ],
     companyLinks: [
-      { name: 'About', path: '#' },
-      { name: 'Contact', path: '#' },
-      { name: 'Privacy', path: '#' },
+      { name: 'About', path: paths.about() },
+      { name: 'Contact', path: paths.contact() },
+      { name: 'Privacy', path: paths.privacyPolicy() },
     ],
   }
 
@@ -80,7 +78,7 @@ const Footer = () => {
                       {item.name}
                     </Link>
                   ) : (
-                    <Link href={item.path ?? '#'} className="hover:text-foreground">
+                    <Link href="#" className="hover:text-foreground">
                       {item.name}
                     </Link>
                   )}

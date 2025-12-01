@@ -19,7 +19,7 @@ export const paths = {
   privacy: () => '/privacy',
   terms: () => '/terms',
   recruitment: () => '/recruitment',
-
+  privacyPolicy: () => '/privacy-policy',
   // Project paths authenticate
   login: () => `${paths.auth}/login`,
   signup: () => `${paths.auth}/signup`,
@@ -34,7 +34,10 @@ export const paths = {
   adminConsultants: () => `${paths.admin}/consultants`,
   adminUsers: () => `${paths.admin}/users`,
   adminUserDetail: (id: number) => `${paths.admin}/user-detail/${id}`,
-
+  adminBookingHistory: () => `${paths.admin}/booking-history`,
+  adminEnquiry: () => `${paths.admin}/enquiry`,
+  adminEnquiryDetail: (id: number) => `${paths.admin}/enquiry/${id}`,
+  adminBookingDetail: (id: number) => `${paths.admin}/booking-history/${id}`,
   // Project paths consultant
   consultantDashboard: () => `${paths.consultant}/dashboard`,
   consultantProfile: () => `${paths.consultant}/profile`,

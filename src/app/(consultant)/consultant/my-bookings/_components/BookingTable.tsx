@@ -175,10 +175,13 @@ export default function MyBookingsTable() {
               />
 
               <div className="flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={closeLinkDialog}>
+                <Button type="button" variant="outline" onClick={closeLinkDialog} disabled={form.formState.isSubmitting}>
                   Cancel
                 </Button>
-                <Button type="submit">{dialogMode === 'add' ? 'Save' : 'Update'}</Button>
+
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? (dialogMode === 'add' ? 'Saving...' : 'Updating...') : dialogMode === 'add' ? 'Save' : 'Update'}
+                </Button>
               </div>
             </form>
           </Form>

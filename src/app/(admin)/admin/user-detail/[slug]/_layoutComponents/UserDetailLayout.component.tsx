@@ -6,6 +6,8 @@ import { RenderComponent } from '@/components/renderComponent/RenderComponent.co
 import Details from '../_components/details/Details.component'
 // import ReportsTable from '../_components/reportsTable/ReportsTable.component'
 import NoRecordsFound from '@/components/noRecordsFound/NoRecordFound.component'
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 
 export default function UserDetailLayout({ slug }: { slug: string }) {
   const [page, setPage] = React.useState(1)
@@ -16,9 +18,12 @@ export default function UserDetailLayout({ slug }: { slug: string }) {
   })
   // console.log('dattttaaaaaa', data)
   // const reports = data?.list || []
-
+  const router = useRouter()
   return (
     <div>
+      <Button onClick={() => router.back()} className="mb-4">
+        Back
+      </Button>
       <RenderComponent isLoading={isFetching} isError={isError}>
         {/* {/* <div className="flex flex-col gap-6"> */}
         <Details data={data || {}} />

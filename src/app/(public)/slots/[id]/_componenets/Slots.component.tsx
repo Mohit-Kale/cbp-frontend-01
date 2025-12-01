@@ -3,16 +3,79 @@
 import { useConsultantsQuery, useCurrenciesQuery } from '@/redux/services/consultant.api'
 import { useReduxSelector } from '@/hooks/redux.hook'
 import { useAuthDialog } from '@/components/auth/useAuthDialog.hook'
-import { Calendar, MapPin, Star } from 'lucide-react'
+import { Calendar, MapPin } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import React, { useMemo } from 'react'
 
 interface SlotsComponentProps {
   id: string
   onClickBooking: () => void
 }
+export interface InvoiceBoxProps {
+  consultantId: number
+}
+
+/* ----------------------------- INVOICE COMPONENT ----------------------------- */
+
+export function InvoiceBox({ consultantId }: InvoiceBoxProps) {
+  const { data: consultantsData, isLoading } = useConsultantsQuery({ page: 1, limit: 50 })
+  const { data: currencies } = useCurrenciesQuery()
+
+  const consultant = useMemo(() => consultantsData?.list.find((c) => c.id === consultantId), [consultantsData, consultantId])
+
+  if (isLoading) {
+    return <Card className="p-4 text-sm text-muted-foreground">Loading fees…</Card>
+  }
+
+  if (!consultant) {
+    return <Card className="p-4 text-sm text-muted-foreground">Fee info unavailabledddd</Card>
+  }
+
+  const rateSource = consultant.profile?.hourlyRate ?? null
+  const hourlyRate = rateSource ? parseFloat(rateSource) : null
+  if (!hourlyRate) {
+    return <Card className="p-4 text-sm text-muted-foreground">Fee info unavailable</Card>
+  }
+
+  const currencyId = consultant.profile?.currencyId
+  const currencySymbol = consultant.currency?.symbol || currencies?.find((c) => c.id === currencyId)?.symbol || ''
+
+  const platformFee = hourlyRate * 0.1
+  const total = hourlyRate + platformFee
+
+  return (
+    <Card className="p-4 border border-border shadow-sm mt-4">
+      <div className="flex justify-between text-sm mb-2">
+        <span className="text-muted-foreground">Booking Fee</span>
+        <span className="font-medium">
+          {currencySymbol}
+          {hourlyRate.toFixed(2)}
+        </span>
+      </div>
+
+      <div className="flex justify-between text-sm mb-2">
+        <span className="text-muted-foreground">Platform Fee (10%)</span>
+        <span className="font-medium">
+          {currencySymbol}
+          {platformFee.toFixed(2)}
+        </span>
+      </div>
+
+      <div className="border-t pt-2 mt-2 flex justify-between font-semibold text-base">
+        <span>Total Amount</span>
+        <span>
+          {currencySymbol}
+          {total.toFixed(2)}
+        </span>
+      </div>
+    </Card>
+  )
+}
+
+/* ------------------------------- MAIN COMPONENT ------------------------------ */
 
 export default function SlotsComponent({ id, onClickBooking }: SlotsComponentProps) {
   const { isLoggedIn, userProfile } = useReduxSelector((state) => state.user)
@@ -21,9 +84,10 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
   const { data: consultantsData, isLoading } = useConsultantsQuery({ page: 1, limit: 50 })
   const { data: currencies } = useCurrenciesQuery()
 
-  const consultant = consultantsData?.list.find((c) => c.id === Number(id))
+  const consultant = useMemo(() => consultantsData?.list.find((c) => c.id === Number(id)), [consultantsData, id])
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
+
   if (!consultant) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Consultant not found</div>
 
   const rateSource = consultant.profile?.hourlyRate ?? null
@@ -35,8 +99,6 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
   const hourlyRate = parsedRate ? `${currencySymbol}${parsedRate}/hr` : null
   const city = consultant.profile?.city ?? ''
   const state = consultant.profile?.state ?? ''
-  const rating = consultant.averageRating
-  // Get user role at top-level
   const userRole = userProfile?.role
 
   return (
@@ -55,18 +117,14 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
 
                   {hourlyRate && (
                     <div className="flex flex-col items-end text-right">
-                      {/* Fee */}
                       <div>
                         <p className="text-xl font-semibold text-primary leading-none">{hourlyRate}</p>
                         <p className="text-xs text-muted-foreground mt-1">Consultation Fee</p>
                       </div>
-
-                      <div className="flex mx-6 gap-1">
-                        <span className="text-sm font-medium text-foreground">⭐{rating}</span>
-                      </div>
                     </div>
                   )}
                 </div>
+
                 {/* Specialties */}
                 <div className="flex flex-wrap gap-2">
                   {consultant.consultantSpecialties?.length ? (
@@ -80,7 +138,6 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
                   )}
                 </div>
 
-                {/* Location */}
                 {(city || state) && (
                   <div className="flex items-center text-sm text-muted-foreground gap-2 mt-2">
                     <MapPin className="w-4 h-4 text-primary" />
@@ -94,6 +151,8 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
 
                 {/* Summary */}
                 <p className="text-sm text-muted-foreground leading-relaxed">{consultant.consultantDocuments?.[0]?.parsedData?.summary || 'No description available.'}</p>
+
+                {/* Invoice inside consultant page */}
               </CardContent>
             </Card>
           </div>
@@ -102,17 +161,13 @@ export default function SlotsComponent({ id, onClickBooking }: SlotsComponentPro
           <div className="lg:col-span-1">
             <Card className="p-6 sticky top-20 shadow-sm border border-border">
               <Button
-                className="w-full mb-3 flex items-center justify-center mb-0"
+                className="w-full flex items-center justify-center"
                 onClick={() => {
-                  if (!isLoggedIn) {
-                    return openAuthDialog('signin')
-                  }
-
+                  if (!isLoggedIn) return openAuthDialog('signin')
                   if (userRole !== 'user') {
                     toast.error('Only users can book sessions.')
                     return
                   }
-
                   onClickBooking()
                 }}
               >

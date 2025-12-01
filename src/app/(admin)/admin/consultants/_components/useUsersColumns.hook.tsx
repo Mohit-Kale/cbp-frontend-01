@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { paths } from '@/navigate/paths'
 import { StatusBadge } from '@/components/statusBadge/StatusBadge.component'
 import { Eye } from 'lucide-react'
+import { Tooltip, TooltipContent } from '@/components/ui/tooltip'
+import { TooltipTrigger } from '@radix-ui/react-tooltip'
 export default function useUsersColumns() {
   const [columns, setColumns] = React.useState<ColumnDef<UserDTO>[]>([
     {
@@ -30,9 +32,16 @@ export default function useUsersColumns() {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <Link href={paths.adminUserDetail(row.original.id)} className=" hover:text-blue-900   text-black px-2 py-1 rounded-md text-sm ">
-          <Eye />
-        </Link>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link href={paths.adminUserDetail(row.original.id)} className=" hover:text-blue-900   text-black px-2 py-1 rounded-md text-sm ">
+              <Eye />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>View Consultant Details</p>
+          </TooltipContent>
+        </Tooltip>
       ),
     },
   ])

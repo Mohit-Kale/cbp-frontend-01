@@ -101,7 +101,6 @@ export default function ConsultantSlotsLayout() {
     setBookingSource({ fromCalendar: false })
     setShowBookingForm(true)
   }
-
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-4 md:py-10">
@@ -131,7 +130,7 @@ export default function ConsultantSlotsLayout() {
           }
         }}
         selectedSlot={selectedSlot}
-        consultant={consultant}
+        consultantId={consultant.id}
         events={events}
       />
     </div>

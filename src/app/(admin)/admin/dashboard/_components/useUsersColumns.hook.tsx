@@ -5,8 +5,8 @@ import { UserDTO } from '@/dto'
 import { ColumnDef } from '@tanstack/react-table'
 import { StatusBadge } from '@/components/statusBadge/StatusBadge.component'
 
-// Utility: Extract first word from SNAKE_CASE or CONSTANT_CASE and convert to CamelCase
-function extractMainStatus(value: string) {
+// Utility: Extract first word from SNAKE_CASE or CONSTANT_CASE and convert to CamelCasee
+export function extractMainStatus(value: string) {
   if (!value) return ''
   const main = value.split('_')[0] // "PENDING_VERIFICATION" → "PENDING"
   return main.charAt(0).toUpperCase() + main.slice(1).toLowerCase() // → "Pending"

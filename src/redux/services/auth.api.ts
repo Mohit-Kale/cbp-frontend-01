@@ -1,6 +1,12 @@
 import { UserDTO } from '@/dto'
 import { api } from './api.config'
-
+import { z } from 'zod'
+interface ContactFormSchema {
+  fullName: string
+  email: string
+  subject: string
+  message: string
+}
 export const extendedApi = api.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<any, { email: string; password: string }>({
@@ -35,6 +41,13 @@ export const extendedApi = api.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'profile', id: 'CURRENT' }],
     }),
+    contact: builder.mutation<any, ContactFormSchema>({
+      query: (body) => ({
+        url: '/enquiry',
+        method: 'POST',
+        body,
+      }),
+    }),
 
     // resetPassword: builder.mutation<void, { token: string; newPassword: string }>({
     //   query: (body) => ({
@@ -54,4 +67,4 @@ export const extendedApi = api.injectEndpoints({
   }),
 })
 
-export const { useLoginMutation, useRegisterMutation, useProfileQuery, useLazyProfileQuery, useUpdateProfileMutation } = extendedApi
+export const { useLoginMutation, useRegisterMutation, useProfileQuery, useLazyProfileQuery, useUpdateProfileMutation, useContactMutation } = extendedApi

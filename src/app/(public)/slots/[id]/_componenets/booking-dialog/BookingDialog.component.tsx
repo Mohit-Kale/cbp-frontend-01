@@ -11,24 +11,40 @@ import { useEffect, useMemo, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import DatePickerInput from '@/components/dateInputPicker/DateInputPicker.component'
 import { toast } from 'sonner'
-import { useCreateBookingMutation, BookingPayload } from '@/redux/services/consultant.api'
+import { useCreateBookingMutation, BookingPayload, useConsultantsQuery, useCurrenciesQuery } from '@/redux/services/consultant.api'
 import { BookingSchema } from './Booking.schema'
 import { useRouter } from 'next/navigation'
 import { paths } from '@/navigate/paths'
+import { InvoiceBox } from '../Slots.component'
 
 type BookingDialogProps = {
   showBookingForm: boolean
   setShowBookingForm: (val: boolean) => void
   selectedSlot: any
-  consultant: any
+  consultantId: number
   events: any[]
   source: { fromCalendar: boolean }
 }
 
-export default function BookingDialog({ showBookingForm, setShowBookingForm, selectedSlot, consultant, events, source = { fromCalendar: true } }: BookingDialogProps) {
+export default function BookingDialog({ showBookingForm, setShowBookingForm, selectedSlot, consultantId, events, source = { fromCalendar: true } }: BookingDialogProps) {
   const today = moment().format('YYYY-MM-DD')
+  const router = useRouter()
 
-  const formatSlotLabel = (start: string, end: string) => `${moment(start).utc().format('HH:mm')} - ${moment(end).utc().format('HH:mm')}`
+  const { data: consultantsData } = useConsultantsQuery({ page: 1, limit: 50 })
+  const { data: currencies } = useCurrenciesQuery()
+
+  const consultant = consultantsData?.list.find((c) => c.id === consultantId)
+
+  // ✅ Hourly rate calculation (same as SlotsComponent)
+  const rateSource = consultant?.profile?.hourlyRate ?? null
+  const parsedRate = rateSource ? parseFloat(rateSource) : null
+
+  const currencyId = consultant?.profile?.currencyId
+  const currencySymbol = consultant?.currency?.symbol || currencies?.find((c) => c.id === currencyId)?.symbol || ''
+
+  const hourlyRate = parsedRate ? `${currencySymbol}${parsedRate}/hr` : null
+
+  const formatSlotLabel = (start: string, end: string) => `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`
 
   const form = useForm<BookingSchema>({
     defaultValues: {
@@ -40,8 +56,9 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
 
   const [selectedDate, setSelectedDate] = useState(selectedSlot?.date || today)
   const [createBooking, { isLoading }] = useCreateBookingMutation()
+  const [clientSecret, setClientSecret] = useState('')
 
-  // Mirror date value from form into local state and clear selected time only when date actually changes
+  // Mirror date value from form into local state
   const dateValue = form.watch('date')
   useEffect(() => {
     if (dateValue) {
@@ -85,8 +102,7 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
         end: e.end,
       }))
   }, [events, selectedDate])
-  const [clientSecret, setClientSecret] = useState('')
-  const router = useRouter()
+
   const onSubmit = async (values: any) => {
     const chosenSlot = availableTimes.find((t) => t.label === values.time)
     if (!chosenSlot) {
@@ -95,11 +111,11 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
     }
 
     const payload: BookingPayload = {
-      consultantId: consultant.id,
+      consultantId: consultantId,
       bookingDate: moment().format('YYYY-MM-DD'),
       scheduleDate: moment(chosenSlot.start).format('YYYY-MM-DD'),
-      startTime: moment(chosenSlot.start).utc().format('HH:mm'),
-      endTime: moment(chosenSlot.end).utc().format('HH:mm'),
+      startTime: moment(chosenSlot.start).format('HH:mm'),
+      endTime: moment(chosenSlot.end).format('HH:mm'),
       notes: values.notes || '',
     }
 
@@ -110,10 +126,8 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
         router.push(paths.payment(res.clientSecret, res.bookingId))
       }
       setShowBookingForm(false)
-      console.log('Booking Response:', res)
     } catch (err: any) {
       console.log('Booking failed', err)
-      // toast.error('Booking failed, please try again.')
     }
   }
 
@@ -130,14 +144,17 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
     >
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted/50">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">Book Session with {consultant.fullName}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            Book Session with {consultant?.fullName} {hourlyRate && `(${hourlyRate})`}
+          </DialogTitle>
         </DialogHeader>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">
-            {/* Date input untouched */}
+            {/* Date input */}
             <DatePickerInput form={form} name="date" label="Select Schedule Date" format="YYYY-MM-DD" disablePast placeholder="Pick a date" readOnly={source?.fromCalendar || false} />
 
-            {/* Time Select inside FormField for validation */}
+            {/* Time Select */}
             <FormField
               control={form.control}
               name="time"
@@ -174,6 +191,9 @@ export default function BookingDialog({ showBookingForm, setShowBookingForm, sel
               <Label>Notes (optional)</Label>
               <Input {...form.register('notes')} placeholder="Any additional info..." />
             </div>
+            <InvoiceBox consultantId={consultantId} />
+
+            <div className="text-sm bg-yellow-50 text-yellow-800 border border-yellow-200 px-3 py-2 rounded-md">A 10% convenience fee will be applied to the booking amount.</div>
 
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" type="button" onClick={() => setShowBookingForm(false)}>

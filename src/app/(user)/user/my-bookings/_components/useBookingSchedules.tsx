@@ -134,7 +134,7 @@ export default function useBookingsColumns({ onView, onRate }: UseBookingColumns
                 <TooltipTrigger asChild>
                   <Star className="w-5 h-5 ml-6 text-yellow-400 cursor-pointer" onClick={() => onRate(row.original)} />
                 </TooltipTrigger>
-                <TooltipContent>Rate this consultation</TooltipContent>
+                <TooltipContent>View Rating Dialog</TooltipContent>
               </Tooltip>
             )
           }

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import SectionLoading from '../ui/section-loading'
 
 type RenderComponentProps = {
   isLoading: boolean
@@ -16,8 +17,7 @@ export const RenderComponent: React.FC<RenderComponentProps> = ({ isLoading, isE
     return (
       loader || (
         <div className="flex justify-center items-center py-10 w-full h-30">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="ml-2 text-sm text-gray-500">Loading...</span>
+          <SectionLoading />
         </div>
       )
     )

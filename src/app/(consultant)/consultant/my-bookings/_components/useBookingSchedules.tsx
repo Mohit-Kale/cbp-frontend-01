@@ -145,8 +145,8 @@ export default function useBookingsColumns({ onManageLink, onMarkComplete, onVie
         header: 'Rating',
         cell: ({ row }) => {
           const status = row.original.status as 'COMPLETED' | string
-
-          if (status === 'COMPLETED') {
+          const rating = row.original.rating
+          if (status === 'COMPLETED' && rating) {
             return (
               <Tooltip>
                 <TooltipTrigger asChild>

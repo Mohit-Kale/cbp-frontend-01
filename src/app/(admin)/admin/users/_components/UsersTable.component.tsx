@@ -16,20 +16,24 @@ function UsersTable() {
   const { page, limit, setPage } = useTablePagination(pageSize)
 
   const { data, isFetching, isError } = useAdminUsersQuery({
-    page,
-    limit,
+    page: 1, // Always fetch all users per backend page 1 for client-side pagination
+    limit: 1000, // Fetch enough users to cover all pages
   })
 
   const { columns } = useUsersColumns()
 
-  // Filter without breaking pagination
+  // Filter out consultants
   const filteredList = React.useMemo(() => {
-    const list = data?.list || []
-    return list.filter((user) => user.roles?.some((r) => r.name !== 'consultant'))
-  }, [data])
+    return (data?.list || []).filter((user) => user.roles?.every((r) => r.name !== 'consultant'))
+  }, [data?.list])
 
-  // Calculate total pages based on filtered results
-  const effectiveTotalPages = Math.ceil(filteredList.length / pageSize) || 1
+  // Calculate client-side pagination
+  const paginatedData = React.useMemo(() => {
+    const startIndex = (page - 1) * pageSize
+    return filteredList.slice(startIndex, startIndex + pageSize)
+  }, [filteredList, page])
+
+  const totalPages = Math.ceil(filteredList.length / pageSize) || 1
 
   return (
     <div className="flex flex-col gap-4">
@@ -39,7 +43,7 @@ function UsersTable() {
       </div>
 
       <RenderComponent isLoading={isFetching} isError={isError} loader={<TableSkeleton />}>
-        <DataTable columns={columns} data={filteredList} page={page} setPage={setPage} totalPages={effectiveTotalPages} isPaginationEnabled />
+        <DataTable columns={columns} data={paginatedData} page={page} setPage={setPage} totalPages={totalPages} isPaginationEnabled />
       </RenderComponent>
     </div>
   )

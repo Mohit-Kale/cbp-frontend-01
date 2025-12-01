@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion } from 'framer-motion'
 import { fadeDownVariant, fadeUpVariant, popVariant } from '@/utils/animation.util'
 import { Search, X } from 'lucide-react'
+import { useSpecialistsQuery } from '@/redux/services/consultant.api'
 
 interface FindExpertsHeroProps {
   filters: { name: string; skills: string[]; specialtyId: number[] }
@@ -17,6 +18,37 @@ const quickFilters = ['SaaS & Startups', 'AI & Machine Learning', 'Fintech & Cry
 
 export function FindExpertsHero({ filters, onFilterChange, onSearchClick }: FindExpertsHeroProps) {
   const [searchName, setSearchName] = useState(filters.name)
+  const { data: specialties } = useSpecialistsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  })
+
+  // Create mapping between quick filter names and specialty IDs
+  const quickFilterMapping = useMemo(() => {
+    if (!specialties) return {}
+
+    const mapping: Record<string, number[]> = {}
+
+    // Map quick filters to specialty IDs based on name matching
+    quickFilters.forEach((filterName) => {
+      const matchedSpecialties = specialties.filter(
+        (specialty) =>
+          specialty.name.toLowerCase().includes(filterName.toLowerCase()) ||
+          filterName.toLowerCase().includes(specialty.name.toLowerCase()) ||
+          (filterName.toLowerCase().includes('ai') && specialty.name.toLowerCase().includes('artificial intelligence')) ||
+          (filterName.toLowerCase().includes('fintech') && specialty.name.toLowerCase().includes('financial technology')) ||
+          (filterName.toLowerCase().includes('saas') && specialty.name.toLowerCase().includes('software as a service')),
+      )
+      mapping[filterName] = matchedSpecialties.map((s) => s.id)
+    })
+
+    return mapping
+  }, [specialties])
+
+  // Check if a quick filter is currently active
+  const isQuickFilterActive = (filterName: string) => {
+    const filterIds = quickFilterMapping[filterName] || []
+    return filterIds.some((id) => filters.specialtyId.includes(id))
+  }
 
   useEffect(() => {
     setSearchName(filters.name)
@@ -30,6 +62,28 @@ export function FindExpertsHero({ filters, onFilterChange, onSearchClick }: Find
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     handleSearch()
+  }
+
+  const handleQuickFilterClick = (filterName: string) => {
+    const filterIds = quickFilterMapping[filterName] || []
+
+    if (filterIds.length === 0) return
+
+    // Check if this quick filter is already active
+    const isActive = isQuickFilterActive(filterName)
+
+    // Update specialty filters
+    let newSpecialtyIds: number[]
+    if (isActive) {
+      // Remove this quick filter's specialty IDs
+      newSpecialtyIds = filters.specialtyId.filter((id) => !filterIds.includes(id))
+    } else {
+      // Add this quick filter's specialty IDs
+      newSpecialtyIds = [...filters.specialtyId, ...filterIds.filter((id) => !filters.specialtyId.includes(id))]
+    }
+
+    onFilterChange({ ...filters, specialtyId: newSpecialtyIds })
+    onSearchClick()
   }
 
   return (
@@ -73,13 +127,21 @@ export function FindExpertsHero({ filters, onFilterChange, onSearchClick }: Find
 
         {/* Quick Filters */}
         <motion.div className="flex flex-wrap justify-center gap-2" variants={fadeUpVariant} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
-          {quickFilters.map((filter, i) => (
-            <motion.div key={filter} variants={popVariant} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} transition={{ delay: i * 0.1 }}>
-              <Button variant="secondary" className="px-4 py-2 rounded-full text-sm bg-primary/10 text-primary hover:bg-primary/20" type="button">
-                {filter}
-              </Button>
-            </motion.div>
-          ))}
+          {quickFilters.map((filter, i) => {
+            const isActive = isQuickFilterActive(filter)
+            return (
+              <motion.div key={filter} variants={popVariant} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} transition={{ delay: i * 0.1 }}>
+                <Button
+                  variant={isActive ? 'default' : 'secondary'}
+                  className={`px-4 py-2 rounded-full text-sm transition-all ${isActive ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-primary/10 text-primary hover:bg-primary/20'}`}
+                  type="button"
+                  onClick={() => handleQuickFilterClick(filter)}
+                >
+                  {filter}
+                </Button>
+              </motion.div>
+            )
+          })}
         </motion.div>
       </div>
     </section>
